@@ -1,0 +1,78 @@
+[package]
+name = "spider-opti"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.77"
+description = "Spider-Opti — Windows optimizer with a spider mascot"
+authors = ["Spider-Opti contributors"]
+license = "MIT"
+
+[lib]
+name = "spider_opti_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+path = "src/lib.rs"
+
+[[bin]]
+name = "spider-opti"
+path = "src/main.rs"
+
+[build-dependencies]
+# Generates bindings and wires the Windows manifest on Windows targets.
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# Tauri 2.x runtime (IPC, events, webview).
+tauri = { version = "2", features = [] }
+
+# Serde serialization for the command contract.
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Async runtime for Tauri commands; spawn_blocking wraps rayon/winreg work.
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "fs", "sync"] }
+
+# Parallel FS traversal when scanning junk.
+rayon = "1"
+
+# CPU / RAM / disk metrics.
+sysinfo = "0.38"
+
+# Unified error type across the backend.
+thiserror = "2"
+
+# Structured logging; re-emitted to the UI as spider://log events.
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Global WHITELIST of registry paths.
+once_cell = "1"
+
+# Deep filesystem traversal (used via rayon par_bridge).
+walkdir = "2"
+
+# ---------- Windows-only dependencies ----------
+[target.'cfg(windows)'.dependencies]
+# Safe wrapper around the registry.
+winreg = "0.56"
+
+# Safe wrapper around the Service Control Manager.
+windows-service = "0.8"
+
+# Direct WinAPI access for what the other crates don't cover
+# (IsUserAnAdmin-style elevation check via OpenProcessToken/GetTokenInformation).
+windows = { version = "0.62", features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_System_Threading",
+] }
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true
