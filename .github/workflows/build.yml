@@ -40,12 +40,15 @@ jobs:
       - name: Install npm deps
         run: npm ci
 
+      # Vite runs BEFORE cargo check because `tauri::generate_context!()` in
+      # lib.rs validates the path in `tauri.conf.json.frontendDist` ("../dist")
+      # at macro-expansion time. Without a pre-built dist/, cargo check panics.
+      - name: Vite build (frontend)
+        run: npm run build
+
       - name: Cargo check (backend)
         working-directory: src-tauri
         run: cargo check --target x86_64-pc-windows-msvc
-
-      - name: Vite build (frontend)
-        run: npm run build
 
       - name: Tauri build (MSI installer)
         run: cargo tauri build --target x86_64-pc-windows-msvc
