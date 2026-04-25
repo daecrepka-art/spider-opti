@@ -1,0 +1,76 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows-build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain (MSVC)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+          components: rustfmt, clippy
+
+      - name: Cache cargo registry + target
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli --version "^2" --locked
+
+      - name: Install npm deps
+        run: npm ci
+
+      - name: Cargo check (backend)
+        working-directory: src-tauri
+        run: cargo check --target x86_64-pc-windows-msvc
+
+      - name: Vite build (frontend)
+        run: npm run build
+
+      - name: Tauri build (MSI installer)
+        run: cargo tauri build --target x86_64-pc-windows-msvc
+
+      - name: Locate MSI artifacts
+        id: locate
+        shell: pwsh
+        run: |
+          $msi = Get-ChildItem -Path src-tauri/target/x86_64-pc-windows-msvc/release/bundle/msi -Filter *.msi -File -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $msi) { throw "No .msi produced by tauri build" }
+          "msi_path=$($msi.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "msi_name=$($msi.Name)"      | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Upload MSI as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: spider-opti-msi
+          path: ${{ steps.locate.outputs.msi_path }}
+          if-no-files-found: error
+
+      - name: Attach MSI to GitHub Release (tag pushes only)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.locate.outputs.msi_path }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true

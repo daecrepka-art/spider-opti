@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Caffè Milano 1887 — una macchina per espresso artigianale, forgiata come un cimelio di famiglia."
+    />
+    <title>Caffè Milano · 1887</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600;1,700&family=IM+Fell+English:ital@0;1&family=Playfair+Display:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="preload" as="image" href="./frames/frame_0001.png" />
+    <link rel="preload" as="image" href="./frames/frame_0002.png" />
+    <link rel="preload" as="image" href="./frames/frame_0003.png" />
+    <link rel="preload" as="image" href="./frames/frame_0004.png" />
+    <link rel="preload" as="image" href="./frames/frame_0005.png" />
+    <script type="module" crossorigin src="./assets/index-BNaZEalU.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-nIhMrusQ.css">
+  </head>
+  <body>
+    <div class="custom-cursor" aria-hidden="true"></div>
+    <div id="app-shell">
+      <header class="site-nav" id="top">
+        <a class="site-nav__brand" href="#hero" aria-label="Caffè Milano 1887"
+          >Caffè Milano · <time datetime="1887">1887</time></a
+        >
+        <nav class="site-nav__links" aria-label="Navigazione primaria">
+          <a href="#animazione">Macchina</a>
+          <a href="#caratteristiche">Dettagli</a>
+          <a href="#eredita">Eredità</a>
+          <a href="#attesa">Lista</a>
+        </nav>
+      </header>
+
+      <article class="page">
+        <section class="hero" id="hero" aria-labelledby="hero-title">
+          <div class="hero__media">
+            <video
+              class="hero__video"
+              src="./Luxury_espresso.mp4"
+              autoplay
+              muted
+              loop
+              playsinline
+              preload="metadata"
+              width="1280"
+              height="720"
+            ></video>
+            <div class="hero__fade" aria-hidden="true"></div>
+          </div>
+          <div class="hero__content">
+            <p class="eyebrow">Artigianale · Dal 1887</p>
+            <h1
+              class="hero__title"
+              id="hero-title"
+              aria-label="L'Arte del Caffè Perfetto"
+            >
+              <span class="hero__title-word">L'Arte</span>
+              <span class="hero__title-word">del Caffè</span>
+              <span class="hero__title-word">Perfetto</span>
+            </h1>
+            <div class="hero__rule" aria-hidden="true"></div>
+            <p class="hero__subtitle">
+              Ogni estrazione è un rito silenzioso: ottone caldo, rame vivo e la
+              pazienza di quattro generazioni milanesi custodita in una sola
+              leva.
+            </p>
+            <a class="hero__cta" href="#animazione">Scopri la Macchina ↓</a>
+          </div>
+          <div class="seal seal--hero" aria-hidden="true">
+            <svg viewBox="0 0 160 160" role="presentation">
+              <defs>
+                <path
+                  id="seal-path-hero"
+                  d="M80,80 m-52,0 a52,52 0 1,1 104,0 a52,52 0 1,1 -104,0"
+                />
+              </defs>
+              <circle cx="80" cy="80" r="56" class="seal__outer" />
+              <circle cx="80" cy="80" r="46" class="seal__inner" />
+              <text class="seal__text">
+                <textPath href="#seal-path-hero" startOffset="50%">
+                  Founded 1887 · Milano · Founded 1887 · Milano
+                </textPath>
+              </text>
+              <text x="80" y="92" text-anchor="middle" class="seal__mark">
+                CM
+              </text>
+            </svg>
+          </div>
+        </section>
+
+        <div class="ornamental-divider" aria-hidden="true">── ✦ ──</div>
+
+        <section
+          class="frame-section"
+          id="animazione"
+          aria-labelledby="frame-title"
+        >
+          <div class="frame-section__sticky">
+            <aside class="frame-section__aside" aria-hidden="true">
+              DALLA BOTTEGA DI MILANO
+            </aside>
+            <div class="frame-section__content">
+              <p class="eyebrow">La rivelazione della forma</p>
+              <h2 class="section-title" id="frame-title">
+                Un meccanismo che respira lentamente
+              </h2>
+              <figure class="frame-stage">
+                <canvas
+                  id="espresso-canvas"
+                  width="1280"
+                  height="720"
+                  aria-label="Animazione esplosa della macchina espresso"
+                ></canvas>
+              </figure>
+              <figcaption class="frame-section__caption" id="frame-caption">
+                Every surface shaped by hand. Every curve deliberate.
+              </figcaption>
+            </div>
+          </div>
+        </section>
+
+        <div class="ornamental-divider" aria-hidden="true">❧</div>
+
+        <section
+          class="feature feature--light"
+          id="caratteristiche"
+          data-reveal
+        >
+          <div class="feature__ornament ornament-parallax" aria-hidden="true">
+            <svg viewBox="0 0 160 160" role="presentation">
+              <path
+                d="M30 90c18-36 82-36 100 0M50 62c12 14 48 14 60 0M74 38c4 10 8 16 6 32"
+              />
+            </svg>
+          </div>
+          <div class="feature__text">
+            <span class="feature__index" aria-hidden="true">I</span>
+            <p class="eyebrow">Il Cuore di Rame</p>
+            <h2 class="section-title">
+              La caldaia martellata a mano, temprata dal tempo
+            </h2>
+            <p class="feature__body">
+              Forgiata in rame massiccio e rifinita con una patina sobria, la
+              caldaia trattiene il calore con la calma di una stufa antica. La
+              superficie vive di piccoli colpi visibili, memoria del martello e
+              della mano che l'ha alzata in bottega.
+            </p>
+          </div>
+          <figure class="feature__media">
+            <img
+              src="./frames/frame_0018.png"
+              alt="Dettaglio della caldaia in rame della macchina espresso"
+              loading="lazy"
+              decoding="async"
+              width="1280"
+              height="720"
+            />
+          </figure>
+        </section>
+
+        <div class="ornamental-divider" aria-hidden="true">── ✦ ──</div>
+
+        <section class="feature feature--dark feature--reverse" data-reveal>
+          <div class="feature__ornament ornament-parallax" aria-hidden="true">
+            <svg viewBox="0 0 160 160" role="presentation">
+              <path
+                d="M36 108c18-18 42-28 44-54 2 26 26 36 44 54M56 56c8 8 18 14 24 30M104 56c-8 8-18 14-24 30"
+              />
+            </svg>
+          </div>
+          <figure class="feature__media">
+            <img
+              src="./frames/frame_0042.png"
+              alt="Vista della camera di estrazione e della pressione artigianale"
+              loading="lazy"
+              decoding="async"
+              width="1280"
+              height="720"
+            />
+          </figure>
+          <div class="feature__text">
+            <span class="feature__index" aria-hidden="true">II</span>
+            <p class="eyebrow">Pressione Artigiana</p>
+            <h2 class="section-title">
+              Nove bar custoditi per ventisette secondi di estrazione
+            </h2>
+            <p class="feature__body">
+              La pressione non aggredisce il caffè: lo accompagna. La leva,
+              bilanciata come una cerniera teatrale, consegna una forza costante
+              e composta per ottenere crema fitta, corpo setoso e un finale
+              pulito.
+            </p>
+          </div>
+        </section>
+
+        <div class="ornamental-divider" aria-hidden="true">❧</div>
+
+        <section class="feature feature--light" data-reveal>
+          <div class="feature__ornament ornament-parallax" aria-hidden="true">
+            <svg viewBox="0 0 160 160" role="presentation">
+              <path
+                d="M34 102c22-8 38-20 46-46 8 26 24 38 46 46M52 82h56M80 36v76"
+              />
+            </svg>
+          </div>
+          <div class="feature__text">
+            <span class="feature__index" aria-hidden="true">III</span>
+            <p class="eyebrow">Ingegneria di Precisione</p>
+            <h2 class="section-title">
+              Tolleranze entro ±0.01mm, affidate a un solo artigiano
+            </h2>
+            <p class="feature__body">
+              Ogni filettatura, ogni sede, ogni raccordo nasce dallo stesso
+              banco di lavoro. La precisione non è industriale: è personale.
+              Un'unica mano controlla gli accoppiamenti fino a renderli
+              inevitabili.
+            </p>
+          </div>
+          <figure class="feature__media">
+            <img
+              src="./frames/frame_0072.png"
+              alt="Componenti meccanici lavorati con precisione artigianale"
+              loading="lazy"
+              decoding="async"
+              width="1280"
+              height="720"
+            />
+          </figure>
+        </section>
+
+        <div class="ornamental-divider" aria-hidden="true">── ✦ ──</div>
+
+        <section class="feature feature--dark feature--reverse" data-reveal>
+          <div class="feature__ornament ornament-parallax" aria-hidden="true">
+            <svg viewBox="0 0 160 160" role="presentation">
+              <path
+                d="M44 108c8-38 20-58 36-74 16 16 28 36 36 74M58 90c14-8 30-8 44 0"
+              />
+            </svg>
+          </div>
+          <figure class="feature__media">
+            <img
+              src="./frames/frame_0102.png"
+              alt="Studio termico della macchina in finitura ottone e cromo"
+              loading="lazy"
+              decoding="async"
+              width="1280"
+              height="720"
+            />
+          </figure>
+          <div class="feature__text">
+            <span class="feature__index" aria-hidden="true">IV</span>
+            <p class="eyebrow">L'Equilibrio del Calore</p>
+            <h2 class="section-title">
+              Una temperatura ferma entro ±1°C, dal primo alzarsi del vapore
+            </h2>
+            <p class="feature__body">
+              Il calore circola in silenzio, senza sbalzi improvvisi. La massa
+              metallica e il percorso dell'acqua cooperano per mantenere il
+              gesto coerente, tazza dopo tazza, come una partitura eseguita
+              sempre nello stesso modo.
+            </p>
+          </div>
+        </section>
+
+        <div class="ornamental-divider" aria-hidden="true">❧</div>
+
+        <section class="feature feature--light" data-reveal>
+          <div class="feature__ornament ornament-parallax" aria-hidden="true">
+            <svg viewBox="0 0 160 160" role="presentation">
+              <path
+                d="M30 112c30-10 54-32 50-76 10 30 28 54 50 76M54 66c12 10 40 10 52 0"
+              />
+            </svg>
+          </div>
+          <div class="feature__text">
+            <span class="feature__index" aria-hidden="true">V</span>
+            <p class="eyebrow">Costruzione Eterna</p>
+            <h2 class="section-title">
+              Ottone pieno e cromo profondo, nati per sopravvivere al
+              proprietario
+            </h2>
+            <p class="feature__body">
+              Nessuna plastica distrae dalla promessa di durata. L'ottone porta
+              il peso, il cromo custodisce il riflesso, le viti si stringono con
+              la soddisfazione di un oggetto destinato ad essere tramandato, non
+              sostituito.
+            </p>
+          </div>
+          <figure class="feature__media">
+            <img
+              src="./frames/frame_0136.png"
+              alt="Struttura finale della macchina espresso ereditabile"
+              loading="lazy"
+              decoding="async"
+              width="1280"
+              height="720"
+            />
+          </figure>
+        </section>
+
+        <div class="ornamental-divider" aria-hidden="true">── ✦ ──</div>
+
+        <section class="stats-section" aria-labelledby="stats-title">
+          <div class="stats-section__inner">
+            <p class="eyebrow">Misure della bottega</p>
+            <h2 class="section-title" id="stats-title">
+              Numeri pronunciati sottovoce
+            </h2>
+            <div class="stats-grid">
+              <div
+                class="stat-card"
+                data-counter
+                data-target="9"
+                data-suffix=" Bar"
+              >
+                <p class="stat-card__value">0 Bar</p>
+                <p class="stat-card__label">Pressione Professionale</p>
+                <p class="stat-card__note">
+                  La crema si posa densa, senza fretta.
+                </p>
+              </div>
+              <div
+                class="stat-card"
+                data-counter
+                data-target="1"
+                data-prefix="±"
+                data-suffix="°C"
+              >
+                <p class="stat-card__value">±0°C</p>
+                <p class="stat-card__label">Stabilità Termica</p>
+                <p class="stat-card__note">
+                  Il calore resta disciplinato per tutto il pull.
+                </p>
+              </div>
+              <div
+                class="stat-card"
+                data-counter
+                data-target="30"
+                data-suffix=" Secondi"
+              >
+                <p class="stat-card__value">0 Secondi</p>
+                <p class="stat-card__label">Riscaldamento Completo</p>
+                <p class="stat-card__note">
+                  Dal silenzio alla prontezza in mezzo minuto.
+                </p>
+              </div>
+              <div
+                class="stat-card"
+                data-counter
+                data-target="58"
+                data-suffix="mm"
+              >
+                <p class="stat-card__value">0mm</p>
+                <p class="stat-card__label">Portafiltro Professionale</p>
+                <p class="stat-card__note">
+                  Un diametro classico, degno di un banco serio.
+                </p>
+              </div>
+            </div>
+            <blockquote class="stats-section__quote">
+              “Una macchina che non serve soltanto il caffè: conserva l'onore
+              del banco e il tempo di chi lo gestisce.”
+              <cite>— Gazzetta del Caffè Milanese, 1931</cite>
+            </blockquote>
+          </div>
+        </section>
+
+        <div class="ornamental-divider" aria-hidden="true">❧</div>
+
+        <section class="heritage" id="eredita" aria-labelledby="heritage-title">
+          <div class="heritage__content">
+            <div>
+              <p class="eyebrow">Cronaca di famiglia</p>
+              <h2 class="section-title" id="heritage-title">
+                Una lettera da Milano, custodita nel metallo
+              </h2>
+              <div class="heritage__letter">
+                <p>
+                  Nel <time datetime="1887">1887</time>, in una strada laterale
+                  fra Brera e Cordusio, Cesare Montalbano inaugurò una bottega
+                  minuscola dedicata ai metalli nobili e alle macchine che
+                  chiedevano pazienza. Diceva che un espresso ben fatto dovesse
+                  pesare come una promessa mantenuta.
+                </p>
+                <p>
+                  Suo figlio Lorenzo portò la precisione, aggiustando valvole e
+                  filettature con una disciplina quasi musicale. Negli anni
+                  della ricostruzione, la famiglia imparò a proteggere la
+                  bellezza senza renderla fragile: ottone spesso, leve sobrie,
+                  superfici lucidate per riflettere lampade calde e tovaglie di
+                  velluto.
+                </p>
+                <p>
+                  Oggi la quarta generazione realizza ogni macchina come si
+                  finisce una dedica. Il risultato non appartiene alle mode né
+                  ai cataloghi stagionali. Appartiene a chi desidera lasciare
+                  qualcosa di tangibile sul banco, e magari in eredità.
+                </p>
+              </div>
+            </div>
+            <div class="seal seal--heritage" aria-hidden="true">
+              <svg viewBox="0 0 180 180" role="presentation">
+                <defs>
+                  <path
+                    id="seal-path-story"
+                    d="M90,90 m-58,0 a58,58 0 1,1 116,0 a58,58 0 1,1 -116,0"
+                  />
+                </defs>
+                <circle cx="90" cy="90" r="62" class="seal__outer" />
+                <circle cx="90" cy="90" r="52" class="seal__inner" />
+                <text class="seal__text">
+                  <textPath href="#seal-path-story" startOffset="50%">
+                    Founded 1887 · Milano · Founded 1887 · Milano
+                  </textPath>
+                </text>
+                <text x="90" y="104" text-anchor="middle" class="seal__mark">
+                  1887
+                </text>
+              </svg>
+            </div>
+          </div>
+        </section>
+
+        <div class="ornamental-divider" aria-hidden="true">── ✦ ──</div>
+
+        <section class="cta-section" id="attesa" aria-labelledby="cta-title">
+          <div class="cta-section__inner">
+            <p class="eyebrow">Lista d'Attesa Esclusiva</p>
+            <h2 class="section-title section-title--light" id="cta-title">
+              Riservato a Pochi
+            </h2>
+            <p class="cta-section__body">
+              La produzione resta limitata a 120 unità l'anno, finite e
+              consegnate a mano nel laboratorio di Milano.
+            </p>
+            <button class="cta-button" type="button" data-modal-open>
+              Richiedi l'Invito
+            </button>
+            <p class="cta-section__meta">
+              120 unità l'anno · Consegna a mano · Milano
+            </p>
+            <div class="seal seal--cta" aria-hidden="true">
+              <svg viewBox="0 0 160 160" role="presentation">
+                <defs>
+                  <path
+                    id="seal-path-cta"
+                    d="M80,80 m-52,0 a52,52 0 1,1 104,0 a52,52 0 1,1 -104,0"
+                  />
+                </defs>
+                <circle cx="80" cy="80" r="56" class="seal__outer" />
+                <circle cx="80" cy="80" r="46" class="seal__inner" />
+                <text class="seal__text">
+                  <textPath href="#seal-path-cta" startOffset="50%">
+                    Founded 1887 · Milano · Founded 1887 · Milano
+                  </textPath>
+                </text>
+                <text x="80" y="92" text-anchor="middle" class="seal__mark">
+                  CM
+                </text>
+              </svg>
+            </div>
+          </div>
+          <div class="scroll-sentinel" aria-hidden="true"></div>
+        </section>
+      </article>
+
+      <footer class="site-footer">
+        <div class="site-footer__grid">
+          <div>
+            <p class="site-footer__brand">Caffè Milano</p>
+            <p class="site-footer__small">
+              Fondato nel <time datetime="1887">1887</time> · Milano
+            </p>
+          </div>
+          <div class="site-footer__center">
+            <div
+              class="ornamental-divider ornamental-divider--footer"
+              aria-hidden="true"
+            >
+              ── ✦ ──
+            </div>
+            <p class="site-footer__small">Fatto a mano in Italia</p>
+          </div>
+          <address class="site-footer__links">
+            <a href="#top">Instagram</a><a href="#top">Archivio</a
+            ><a href="#top">Contatti</a>
+          </address>
+        </div>
+        <div class="site-footer__bottom">
+          <p>© Caffè Milano 1887. Ogni dettaglio custodito con disciplina.</p>
+        </div>
+      </footer>
+    </div>
+
+    <div class="modal" id="waitlist-modal" aria-hidden="true">
+      <div class="modal__overlay" data-modal-close></div>
+      <div
+        class="modal__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+      >
+        <button
+          class="modal__close"
+          type="button"
+          aria-label="Chiudi"
+          data-modal-close
+        >
+          ×
+        </button>
+        <p class="eyebrow">Lista d'Attesa Privata</p>
+        <h2 class="section-title" id="modal-title">Unisciti alla Lista</h2>
+        <p class="modal__subtext">
+          Lascia il tuo indirizzo e custodiremo il tuo posto nel prossimo lotto.
+        </p>
+        <form class="modal__form" id="waitlist-form">
+          <label class="sr-only" for="waitlist-email">Indirizzo email</label
+          ><input
+            id="waitlist-email"
+            name="email"
+            type="email"
+            placeholder="nome@atelier.it"
+            required
+            inputmode="email"
+            autocomplete="email"
+          /><button class="modal__submit" type="submit">
+            Richiedi accesso
+          </button>
+        </form>
+        <p class="modal__success" id="waitlist-success" hidden>
+          Richiesta ricevuta. Il prossimo invito partirà direttamente da Milano.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
