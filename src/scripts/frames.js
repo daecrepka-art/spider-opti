@@ -6,7 +6,7 @@ function lerp(current, target, factor) {
 }
 
 function getFramePath(index) {
-  return `/frames/frame_${String(index).padStart(4, "0")}.png`;
+  return `./frames/frame_${String(index).padStart(4, "0")}.png`;
 }
 
 export function initFrameAnimation() {
