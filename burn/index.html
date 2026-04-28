@@ -10,609 +10,176 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="preload" as="image" type="image/webp" href="frames-original/frame_001.webp" fetchpriority="high" />
 
 <style>
-  /* ─────────────────────────────────────────────────────
-     RESET + ROOT
-     ───────────────────────────────────────────────────── */
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; }
-  body {
-    font-family: "DM Sans", system-ui, sans-serif;
-    font-weight: 300;
-    color: var(--color-text-primary);
-    background: var(--color-void);
-    overscroll-behavior: none;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
-    cursor: none;
-  }
-  a, button { font: inherit; color: inherit; cursor: none; }
-  button { border: none; background: none; }
-  img { display: block; max-width: 100%; }
-  ::selection { background: var(--color-accent); color: #000; }
+/* ─── RESET + ROOT ───────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:"DM Sans",system-ui,sans-serif;font-weight:300;color:var(--color-text-primary);background:var(--color-void);overscroll-behavior:none;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;cursor:none}
+a,button{font:inherit;color:inherit;cursor:none}
+button{border:none;background:none}
+img{display:block;max-width:100%}
+::selection{background:var(--color-accent);color:#000}
 
-  :root {
-    --color-void:           #000000;
-    --color-surface:        #0A0A0A;
-    --color-text-primary:   #FFFFFF;
-    --color-text-secondary: rgba(255,255,255,0.45);
-    --color-border:         rgba(255,255,255,0.08);
-    --color-overlay-edge:   rgba(0,0,0,0.85);
+:root{
+  --color-void:#000;
+  --color-surface:#0A0A0A;
+  --color-text-primary:#FFFFFF;
+  --color-text-secondary:rgba(255,255,255,0.45);
+  --color-border:rgba(255,255,255,0.08);
+  --color-overlay-edge:rgba(0,0,0,0.85);
+  --color-accent:#CC2200;
+  --color-accent-glow:rgba(204,34,0,0.25);
+  --color-accent-soft:rgba(204,34,0,0.12);
+  --ease-luxe:cubic-bezier(0.22,1,0.36,1);
+}
+[data-theme="light"]{
+  --color-void:#F0EDE8;
+  --color-surface:#E8E4DD;
+  --color-text-primary:#0A0A0A;
+  --color-text-secondary:rgba(0,0,0,0.45);
+  --color-border:rgba(0,0,0,0.08);
+  --color-overlay-edge:rgba(240,237,232,0.78);
+}
+html{transition:background-color 500ms var(--ease-luxe);background:var(--color-void)}
+body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-luxe)}
 
-    /* dynamic per variant — set by JS */
-    --color-accent:      #CC2200;
-    --color-accent-glow: rgba(204,34,0,0.25);
-    --color-accent-soft: rgba(204,34,0,0.12);
+/* @property allows transitioning custom-property colors */
+@property --color-accent      {syntax:'<color>';inherits:true;initial-value:#CC2200}
+@property --color-accent-glow {syntax:'<color>';inherits:true;initial-value:rgba(204,34,0,0.25)}
+@property --color-accent-soft {syntax:'<color>';inherits:true;initial-value:rgba(204,34,0,0.12)}
+:root{transition:--color-accent 600ms var(--ease-luxe),--color-accent-glow 600ms var(--ease-luxe),--color-accent-soft 600ms var(--ease-luxe)}
 
-    --ease-luxe: cubic-bezier(0.22, 1, 0.36, 1);
-  }
+/* ─── STAGE ──────────────────────────────────────────── */
+#scroll-spacer{height:600vh;pointer-events:none}
+#stage{position:fixed;inset:0;width:100vw;height:100vh;overflow:hidden;z-index:1;background:var(--color-void);transition:background-color 500ms var(--ease-luxe)}
+#frame-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1}
+#vignette{position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at center,transparent 0%,transparent 35%,var(--color-overlay-edge) 100%);opacity:.6;transition:background 500ms var(--ease-luxe),opacity 500ms var(--ease-luxe)}
+#top-fade{position:absolute;top:0;left:0;right:0;height:120px;z-index:3;pointer-events:none;background:linear-gradient(to bottom,var(--color-overlay-edge) 0%,transparent 100%);opacity:.7}
 
-  [data-theme="light"] {
-    --color-void:           #F0EDE8;
-    --color-surface:        #E8E4DD;
-    --color-text-primary:   #0A0A0A;
-    --color-text-secondary: rgba(0,0,0,0.45);
-    --color-border:         rgba(0,0,0,0.08);
-    --color-overlay-edge:   rgba(240,237,232,0.78);
-  }
+/* ─── TOP NAV ────────────────────────────────────────── */
+.top-nav{position:fixed;top:0;left:0;right:0;height:72px;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:0 6vw;pointer-events:none}
+.top-nav>*{pointer-events:auto}
+.logotype{display:flex;align-items:center;gap:16px;font-family:"Bebas Neue",sans-serif;font-size:1.5rem;letter-spacing:.3em;color:var(--color-text-primary);transition:color 500ms var(--ease-luxe);user-select:none}
+.logotype-line{height:2px;width:0;background:var(--color-accent);transition:width 1200ms var(--ease-luxe),background-color 600ms var(--ease-luxe)}
+.loaded .logotype-line{width:56px}
+.nav-right{display:flex;align-items:center;gap:24px}
+.theme-toggle{width:34px;height:18px;border-radius:999px;background:rgba(255,255,255,0.08);border:1px solid var(--color-border);position:relative;transition:background-color 400ms var(--ease-luxe),border-color 400ms var(--ease-luxe);padding:0}
+.theme-toggle::after{content:"";position:absolute;top:50%;left:3px;width:10px;height:10px;border-radius:50%;background:#FFF;transform:translateY(-50%);transition:left 360ms var(--ease-luxe),background 360ms var(--ease-luxe)}
+[data-theme="light"] .theme-toggle{background:rgba(0,0,0,0.04)}
+[data-theme="light"] .theme-toggle::after{left:19px;background:#0A0A0A}
+.theme-toggle:hover{border-color:var(--color-accent)}
+.nav-divider{width:1px;height:24px;background:rgba(255,255,255,0.2)}
+[data-theme="light"] .nav-divider{background:rgba(0,0,0,0.2)}
+.nav-label{font-size:.65rem;letter-spacing:.2em;color:var(--color-text-secondary);text-transform:uppercase;transition:color 500ms var(--ease-luxe)}
 
-  html { transition: background-color 500ms var(--ease-luxe); background: var(--color-void); }
+/* ─── LEFT CONTENT ───────────────────────────────────── */
+.left-block{position:fixed;left:6vw;top:50%;transform:translate(-20px,-50%);width:min(380px,38vw);z-index:30;opacity:0;transition:opacity 700ms var(--ease-luxe),transform 900ms var(--ease-luxe);pointer-events:none}
+.left-block>*{pointer-events:auto}
+.loaded .left-block{opacity:1;transform:translate(0,-50%);transition-delay:200ms}
+.flavor-index{display:flex;align-items:center;gap:12px;color:var(--color-accent);font-size:.6rem;letter-spacing:.35em;text-transform:uppercase;margin-bottom:22px}
+.flavor-index-line{height:1px;width:32px;background:var(--color-accent);transition:background-color 600ms var(--ease-luxe)}
+.flavor-name-stage{min-height:clamp(4rem,7vw,6.5rem);line-height:.9;position:relative}
+.flavor-name{font-family:"Bebas Neue",sans-serif;font-size:clamp(4rem,7vw,6.5rem);line-height:.9;letter-spacing:.02em;color:var(--color-text-primary);transition:color 500ms var(--ease-luxe);transform:translateY(0);opacity:1;will-change:transform,opacity;word-break:break-word}
+.flavor-name.exit-up{transform:translateY(-30px);opacity:0;transition:transform 300ms var(--ease-luxe),opacity 300ms var(--ease-luxe)}
+.flavor-name.enter-from-below{transform:translateY(30px);opacity:0}
+.flavor-name.enter-active{transform:translateY(0);opacity:1;transition:transform 400ms var(--ease-luxe),opacity 400ms var(--ease-luxe)}
+.flavor-subtitle{margin-top:12px;font-size:.9rem;letter-spacing:.25em;color:var(--color-accent);text-transform:uppercase;transition:color 600ms var(--ease-luxe)}
+.flavor-separator{width:48px;height:1px;background:var(--color-accent);margin:24px 0;transition:background-color 600ms var(--ease-luxe)}
+.flavor-description{font-size:.85rem;line-height:1.8;color:var(--color-text-secondary);max-width:280px;transition:opacity 300ms var(--ease-luxe),color 500ms var(--ease-luxe)}
+.flavor-description.fading{opacity:0;transition-duration:200ms}
 
-  body {
-    transition:
-      background-color 500ms var(--ease-luxe),
-      color 500ms var(--ease-luxe);
-  }
+.cta-row{display:flex;gap:12px;margin-top:32px;flex-wrap:wrap}
+.btn{height:48px;padding:0 28px;border-radius:2px;font-family:"Bebas Neue",sans-serif;font-size:1rem;letter-spacing:.15em;display:inline-flex;align-items:center;justify-content:center;transition:all 250ms var(--ease-luxe);white-space:nowrap}
+.btn-primary{background:var(--color-accent);color:#000;border:1px solid var(--color-accent)}
+.btn-primary:hover{filter:brightness(1.15);transform:scale(1.02);box-shadow:0 8px 32px var(--color-accent-glow)}
+.btn-secondary{background:transparent;color:var(--color-text-primary);border:1px solid rgba(255,255,255,0.25)}
+[data-theme="light"] .btn-secondary{border-color:rgba(0,0,0,0.25)}
+.btn-secondary:hover{color:var(--color-accent);border-color:var(--color-accent);box-shadow:inset 0 0 0 1px var(--color-accent)}
 
-  /* CSS custom-property transition for accent shifts.
-     Browsers can't transition raw custom properties without @property. */
-  @property --color-accent      { syntax: '<color>'; inherits: true; initial-value: #CC2200; }
-  @property --color-accent-glow { syntax: '<color>'; inherits: true; initial-value: rgba(204,34,0,0.25); }
-  @property --color-accent-soft { syntax: '<color>'; inherits: true; initial-value: rgba(204,34,0,0.12); }
-  :root {
-    transition:
-      --color-accent 600ms var(--ease-luxe),
-      --color-accent-glow 600ms var(--ease-luxe),
-      --color-accent-soft 600ms var(--ease-luxe);
-  }
+/* ─── RIGHT NAV ──────────────────────────────────────── */
+.right-block{position:fixed;right:5vw;top:50%;transform:translate(20px,-50%);z-index:30;display:flex;align-items:center;gap:0;opacity:0;transition:opacity 700ms var(--ease-luxe),transform 900ms var(--ease-luxe)}
+.loaded .right-block{opacity:1;transform:translate(0,-50%);transition-delay:800ms}
+.ghost-number-stage{min-height:clamp(6rem,12vw,11rem);line-height:1;margin-right:8px}
+.ghost-number{font-family:"Bebas Neue",sans-serif;font-size:clamp(6rem,12vw,11rem);line-height:1;letter-spacing:-.02em;color:rgba(255,255,255,0.04);transform:translateY(0);opacity:1;will-change:transform,opacity;user-select:none}
+[data-theme="light"] .ghost-number{color:rgba(0,0,0,0.05)}
+.ghost-number.exit-up{transform:translateY(-30%);opacity:0;transition:transform 300ms var(--ease-luxe),opacity 300ms var(--ease-luxe)}
+.ghost-number.enter-from-below{transform:translateY(30%);opacity:0}
+.ghost-number.enter-active{transform:translateY(0);opacity:1;transition:transform 400ms var(--ease-luxe),opacity 400ms var(--ease-luxe)}
+.right-strip{width:40px;display:flex;flex-direction:column;align-items:center;gap:0;user-select:none}
+.strip-button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 0;color:var(--color-text-secondary);transition:color 250ms var(--ease-luxe)}
+.strip-button:hover{color:var(--color-accent)}
+.strip-label{font-size:.55rem;letter-spacing:.3em;text-transform:uppercase;writing-mode:vertical-rl;text-orientation:mixed}
+.strip-chevron{width:10px;height:10px;overflow:visible}
+.strip-chevron path{fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.strip-divider-row{display:flex;align-items:center;gap:6px;padding:8px 0}
+.strip-divider{width:1px;height:64px;background:linear-gradient(to bottom,transparent 0%,var(--color-accent) 50%,transparent 100%);transition:background 600ms var(--ease-luxe)}
+.strip-dots{display:flex;flex-direction:column;gap:10px;align-items:center}
+.strip-dot{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,0.2);transition:all 400ms var(--ease-luxe);padding:0}
+[data-theme="light"] .strip-dot{background:rgba(0,0,0,0.2)}
+.strip-dot.is-active{background:var(--color-accent);box-shadow:0 0 8px var(--color-accent);transform:scale(1.4)}
 
-  /* ─────────────────────────────────────────────────────
-     STAGE
-     ───────────────────────────────────────────────────── */
-  #scroll-spacer { height: 600vh; pointer-events: none; }
+/* ─── BOTTOM CLUSTER ─────────────────────────────────── */
+.bottom-cluster{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);z-index:30;display:flex;flex-direction:column;align-items:center;gap:18px;opacity:0;transition:opacity 700ms var(--ease-luxe);pointer-events:none}
+.bottom-cluster>*{pointer-events:auto}
+.loaded .bottom-cluster{opacity:1;transition-delay:1000ms}
+.bottom-cluster.fade-out{opacity:0!important;transition-delay:0ms}
+.social-row{display:flex;gap:24px;align-items:center}
+.social-link{width:16px;height:16px;color:rgba(255,255,255,0.3);transition:color 250ms var(--ease-luxe),transform 250ms var(--ease-luxe);display:inline-flex}
+[data-theme="light"] .social-link{color:rgba(0,0,0,0.3)}
+.social-link:hover{color:var(--color-accent);transform:scale(1.1)}
+.social-link svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.scroll-indicator{display:flex;flex-direction:column;align-items:center;gap:8px}
+.scroll-label{font-size:.55rem;letter-spacing:.4em;color:var(--color-text-secondary);text-transform:uppercase}
+.scroll-bar{width:120px;height:1px;background:rgba(255,255,255,0.1);position:relative;overflow:hidden}
+[data-theme="light"] .scroll-bar{background:rgba(0,0,0,0.1)}
+.scroll-bar-fill{position:absolute;inset:0;width:0%;background:var(--color-accent);transition:background-color 600ms var(--ease-luxe);will-change:width}
+.scroll-frame-counter{font-size:.55rem;letter-spacing:.4em;color:var(--color-text-secondary);text-transform:uppercase;font-variant-numeric:tabular-nums}
 
-  #stage {
-    position: fixed;
-    inset: 0;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    z-index: 1;
-    background: var(--color-void);
-    transition: background-color 500ms var(--ease-luxe);
-  }
+/* ─── LOADER ─────────────────────────────────────────── */
+#loader{position:fixed;inset:0;z-index:1000;background:var(--color-void);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity 600ms var(--ease-luxe),visibility 0s linear 600ms}
+#loader.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.loader-logo{font-family:"Bebas Neue",sans-serif;font-size:2rem;letter-spacing:.3em;color:var(--color-text-primary)}
+.loader-bar{width:220px;height:1px;background:rgba(255,255,255,0.08);position:relative;overflow:hidden}
+[data-theme="light"] .loader-bar{background:rgba(0,0,0,0.08)}
+.loader-bar-fill{position:absolute;inset:0;width:0%;background:var(--color-accent);transition:width 200ms linear}
+.loader-pct{font-size:.6rem;letter-spacing:.4em;color:var(--color-text-secondary);font-variant-numeric:tabular-nums}
 
-  /* CANVAS — full bleed, object-fit cover */
-  #frame-canvas {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    z-index: 1;
-    will-change: transform;
-  }
+/* ─── CUSTOM CURSOR ──────────────────────────────────── */
+#cursor{position:fixed;top:0;left:0;width:12px;height:12px;border-radius:50%;border:1px solid var(--color-accent);background:transparent;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width 200ms var(--ease-luxe),height 200ms var(--ease-luxe),background-color 200ms var(--ease-luxe),border-color 600ms var(--ease-luxe);mix-blend-mode:difference;will-change:transform}
+#cursor.is-hover{width:40px;height:40px;background:var(--color-accent-glow);border-color:var(--color-accent);mix-blend-mode:normal}
+@media (hover:none),(pointer:coarse){#cursor{display:none}body,a,button{cursor:auto}}
 
-  /* GRADIENT OVERLAY — radial dark vignette */
-  #vignette {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    pointer-events: none;
-    background:
-      radial-gradient(ellipse at center,
-        transparent 0%,
-        transparent 35%,
-        var(--color-overlay-edge) 100%);
-    opacity: 0.6;
-    transition: background 500ms var(--ease-luxe), opacity 500ms var(--ease-luxe);
-  }
+/* ─── RESPONSIVE ─────────────────────────────────────── */
+@media (max-width:900px){
+  .top-nav{padding:0 4vw}
+  .left-block{left:4vw;width:min(360px,70vw)}
+  .right-block{right:3vw}
+  .ghost-number-stage{display:none}
+  .flavor-description{max-width:100%}
+}
+@media (max-width:640px){
+  /* Mobile graceful degradation: static hero, no scroll-driven animation */
+  #scroll-spacer{display:none}
+  body.is-mobile{overflow:hidden;height:100svh}
+  .right-block{display:none}
+  .left-block{top:auto;bottom:14vh;left:5vw;width:min(85vw,360px);transform:none;opacity:1}
+  .loaded .left-block{transform:none}
+  .scroll-indicator{display:none}
+  .nav-right .nav-divider,.nav-right .nav-label{display:none}
+  .top-nav{padding:0 5vw}
+  .flavor-name{font-size:clamp(3rem,12vw,4.5rem)}
+  .flavor-description{font-size:.8rem;line-height:1.7}
+  .bottom-cluster{bottom:24px}
+  .cta-row{margin-top:20px}
+  .btn{height:44px;padding:0 22px;font-size:.9rem}
+}
 
-  /* TOP FADE — keeps logotype + nav legible */
-  #top-fade {
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 120px;
-    z-index: 3;
-    pointer-events: none;
-    background: linear-gradient(to bottom,
-      var(--color-overlay-edge) 0%,
-      transparent 100%);
-    opacity: 0.7;
-  }
-
-  /* ─────────────────────────────────────────────────────
-     TOP NAV
-     ───────────────────────────────────────────────────── */
-  .top-nav {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    height: 72px;
-    z-index: 50;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 6vw;
-    pointer-events: none;
-  }
-  .top-nav > * { pointer-events: auto; }
-
-  .logotype {
-    display: flex; align-items: center; gap: 16px;
-    font-family: "Bebas Neue", sans-serif;
-    font-size: 1.5rem;
-    letter-spacing: 0.3em;
-    color: var(--color-text-primary);
-    transition: color 500ms var(--ease-luxe);
-    user-select: none;
-  }
-  .logotype-line {
-    height: 2px;
-    width: 0;
-    background: var(--color-accent);
-    transition: width 1200ms var(--ease-luxe), background-color 600ms var(--ease-luxe);
-  }
-  .loaded .logotype-line { width: 56px; }
-
-  .nav-right {
-    display: flex; align-items: center; gap: 24px;
-  }
-  .theme-toggle {
-    width: 34px; height: 18px;
-    border-radius: 999px;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid var(--color-border);
-    position: relative;
-    transition: background-color 400ms var(--ease-luxe), border-color 400ms var(--ease-luxe);
-    padding: 0;
-  }
-  .theme-toggle::after {
-    content: "";
-    position: absolute;
-    top: 50%; left: 3px;
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    background: #FFFFFF;
-    transform: translateY(-50%);
-    transition: left 360ms var(--ease-luxe), background 360ms var(--ease-luxe);
-  }
-  [data-theme="light"] .theme-toggle { background: rgba(0,0,0,0.04); }
-  [data-theme="light"] .theme-toggle::after { left: 19px; background: #0A0A0A; }
-  .theme-toggle:hover { border-color: var(--color-accent); }
-
-  .nav-divider {
-    width: 1px; height: 24px;
-    background: rgba(255,255,255,0.2);
-  }
-  [data-theme="light"] .nav-divider { background: rgba(0,0,0,0.2); }
-
-  .nav-label {
-    font-size: 0.65rem;
-    letter-spacing: 0.2em;
-    color: var(--color-text-secondary);
-    text-transform: uppercase;
-    transition: color 500ms var(--ease-luxe);
-  }
-
-  /* ─────────────────────────────────────────────────────
-     LEFT CONTENT
-     ───────────────────────────────────────────────────── */
-  .left-block {
-    position: fixed;
-    left: 6vw;
-    top: 50%;
-    transform: translate(-20px, -50%);
-    width: min(380px, 38vw);
-    z-index: 30;
-    opacity: 0;
-    transition:
-      opacity 700ms var(--ease-luxe),
-      transform 900ms var(--ease-luxe);
-    pointer-events: none;
-  }
-  .left-block > * { pointer-events: auto; }
-  .loaded .left-block { opacity: 1; transform: translate(0, -50%); transition-delay: 200ms; }
-
-  .flavor-index {
-    display: flex; align-items: center; gap: 12px;
-    color: var(--color-accent);
-    font-size: 0.6rem;
-    letter-spacing: 0.35em;
-    text-transform: uppercase;
-    margin-bottom: 22px;
-  }
-  .flavor-index-line {
-    height: 1px;
-    width: 32px;
-    background: var(--color-accent);
-    transition: background-color 600ms var(--ease-luxe);
-  }
-
-  .flavor-name-stage {
-    min-height: clamp(4rem, 7vw, 6.5rem);
-    line-height: 0.9;
-    position: relative;
-  }
-  .flavor-name {
-    font-family: "Bebas Neue", sans-serif;
-    font-size: clamp(4rem, 7vw, 6.5rem);
-    line-height: 0.9;
-    letter-spacing: 0.02em;
-    color: var(--color-text-primary);
-    transition: color 500ms var(--ease-luxe);
-    transform: translateY(0);
-    opacity: 1;
-    will-change: transform, opacity;
-    word-break: break-word;
-  }
-  .flavor-name.exit-up {
-    transform: translateY(-30px);
-    opacity: 0;
-    transition: transform 300ms var(--ease-luxe), opacity 300ms var(--ease-luxe);
-  }
-  .flavor-name.enter-from-below {
-    transform: translateY(30px);
-    opacity: 0;
-  }
-  .flavor-name.enter-active {
-    transform: translateY(0);
-    opacity: 1;
-    transition: transform 400ms var(--ease-luxe), opacity 400ms var(--ease-luxe);
-  }
-
-  .flavor-subtitle {
-    margin-top: 12px;
-    font-size: 0.9rem;
-    letter-spacing: 0.25em;
-    color: var(--color-accent);
-    text-transform: uppercase;
-    transition: color 600ms var(--ease-luxe);
-  }
-
-  .flavor-separator {
-    width: 48px;
-    height: 1px;
-    background: var(--color-accent);
-    margin: 24px 0;
-    transition: background-color 600ms var(--ease-luxe);
-  }
-
-  .flavor-description {
-    font-size: 0.85rem;
-    line-height: 1.8;
-    color: var(--color-text-secondary);
-    max-width: 280px;
-    transition: opacity 300ms var(--ease-luxe), color 500ms var(--ease-luxe);
-  }
-  .flavor-description.fading { opacity: 0; transition-duration: 200ms; }
-
-  .cta-row {
-    display: flex; gap: 12px;
-    margin-top: 32px;
-    flex-wrap: wrap;
-  }
-  .btn {
-    height: 48px;
-    padding: 0 28px;
-    border-radius: 2px;
-    font-family: "Bebas Neue", sans-serif;
-    font-size: 1rem;
-    letter-spacing: 0.15em;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 250ms var(--ease-luxe);
-    white-space: nowrap;
-  }
-  .btn-primary {
-    background: var(--color-accent);
-    color: #000000;
-    border: 1px solid var(--color-accent);
-  }
-  .btn-primary:hover {
-    filter: brightness(1.15);
-    transform: scale(1.02);
-    box-shadow: 0 8px 32px var(--color-accent-glow);
-  }
-  .btn-secondary {
-    background: transparent;
-    color: var(--color-text-primary);
-    border: 1px solid rgba(255,255,255,0.25);
-  }
-  [data-theme="light"] .btn-secondary { border-color: rgba(0,0,0,0.25); }
-  .btn-secondary:hover {
-    color: var(--color-accent);
-    border-color: var(--color-accent);
-    box-shadow: inset 0 0 0 1px var(--color-accent);
-  }
-
-  /* ─────────────────────────────────────────────────────
-     RIGHT NAV
-     ───────────────────────────────────────────────────── */
-  .right-block {
-    position: fixed;
-    right: 5vw;
-    top: 50%;
-    transform: translate(20px, -50%);
-    z-index: 30;
-    display: flex;
-    align-items: center;
-    gap: 0;
-    opacity: 0;
-    transition: opacity 700ms var(--ease-luxe), transform 900ms var(--ease-luxe);
-  }
-  .loaded .right-block { opacity: 1; transform: translate(0, -50%); transition-delay: 800ms; }
-
-  .ghost-number-stage {
-    min-height: clamp(6rem, 12vw, 11rem);
-    line-height: 1;
-    margin-right: 8px;
-  }
-  .ghost-number {
-    font-family: "Bebas Neue", sans-serif;
-    font-size: clamp(6rem, 12vw, 11rem);
-    line-height: 1;
-    letter-spacing: -0.02em;
-    color: rgba(255,255,255,0.04);
-    transform: translateY(0);
-    opacity: 1;
-    will-change: transform, opacity;
-    user-select: none;
-  }
-  [data-theme="light"] .ghost-number { color: rgba(0,0,0,0.05); }
-  .ghost-number.exit-up { transform: translateY(-30%); opacity: 0; transition: transform 300ms var(--ease-luxe), opacity 300ms var(--ease-luxe); }
-  .ghost-number.enter-from-below { transform: translateY(30%); opacity: 0; }
-  .ghost-number.enter-active { transform: translateY(0); opacity: 1; transition: transform 400ms var(--ease-luxe), opacity 400ms var(--ease-luxe); }
-
-  .right-strip {
-    width: 40px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0;
-    user-select: none;
-  }
-
-  .strip-button {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 0;
-    color: var(--color-text-secondary);
-    transition: color 250ms var(--ease-luxe);
-  }
-  .strip-button:hover { color: var(--color-accent); }
-
-  .strip-label {
-    font-size: 0.55rem;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
-  }
-
-  .strip-chevron {
-    width: 10px; height: 10px;
-    overflow: visible;
-  }
-  .strip-chevron path { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
-
-  .strip-divider-row {
-    display: flex; align-items: center; gap: 6px;
-    padding: 8px 0;
-  }
-
-  .strip-divider {
-    width: 1px;
-    height: 64px;
-    background: linear-gradient(to bottom,
-      transparent 0%,
-      var(--color-accent) 50%,
-      transparent 100%);
-    transition: background 600ms var(--ease-luxe);
-  }
-
-  .strip-dots {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    align-items: center;
-  }
-  .strip-dot {
-    width: 4px; height: 4px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.2);
-    transition: all 400ms var(--ease-luxe);
-    padding: 0;
-  }
-  [data-theme="light"] .strip-dot { background: rgba(0,0,0,0.2); }
-  .strip-dot.is-active {
-    background: var(--color-accent);
-    box-shadow: 0 0 8px var(--color-accent);
-    transform: scale(1.4);
-  }
-
-  /* ─────────────────────────────────────────────────────
-     SCROLL PROGRESS + SOCIAL
-     ───────────────────────────────────────────────────── */
-  .bottom-cluster {
-    position: fixed;
-    bottom: 40px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 30;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 18px;
-    opacity: 0;
-    transition: opacity 700ms var(--ease-luxe);
-    pointer-events: none;
-  }
-  .bottom-cluster > * { pointer-events: auto; }
-  .loaded .bottom-cluster { opacity: 1; transition-delay: 1000ms; }
-  .bottom-cluster.fade-out { opacity: 0 !important; transition-delay: 0ms; }
-
-  .social-row {
-    display: flex; gap: 24px; align-items: center;
-  }
-  .social-link {
-    width: 16px; height: 16px;
-    color: rgba(255,255,255,0.3);
-    transition: color 250ms var(--ease-luxe), transform 250ms var(--ease-luxe);
-    display: inline-flex;
-  }
-  [data-theme="light"] .social-link { color: rgba(0,0,0,0.3); }
-  .social-link:hover { color: var(--color-accent); transform: scale(1.1); }
-  .social-link svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-
-  .scroll-indicator {
-    display: flex; flex-direction: column; align-items: center; gap: 8px;
-  }
-  .scroll-label {
-    font-size: 0.55rem;
-    letter-spacing: 0.4em;
-    color: var(--color-text-secondary);
-    text-transform: uppercase;
-  }
-  .scroll-bar {
-    width: 120px; height: 1px;
-    background: rgba(255,255,255,0.1);
-    position: relative;
-    overflow: hidden;
-  }
-  [data-theme="light"] .scroll-bar { background: rgba(0,0,0,0.1); }
-  .scroll-bar-fill {
-    position: absolute;
-    inset: 0;
-    width: 0%;
-    background: var(--color-accent);
-    transition: background-color 600ms var(--ease-luxe);
-    will-change: width;
-  }
-  .scroll-frame-counter {
-    font-size: 0.55rem;
-    letter-spacing: 0.4em;
-    color: var(--color-text-secondary);
-    text-transform: uppercase;
-    font-variant-numeric: tabular-nums;
-  }
-
-  /* ─────────────────────────────────────────────────────
-     LOADING STATE
-     ───────────────────────────────────────────────────── */
-  #loader {
-    position: fixed;
-    inset: 0;
-    z-index: 1000;
-    background: var(--color-void);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 18px;
-    transition: opacity 600ms var(--ease-luxe), visibility 0s linear 600ms;
-  }
-  #loader.hidden {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-  }
-  .loader-logo {
-    font-family: "Bebas Neue", sans-serif;
-    font-size: 2rem;
-    letter-spacing: 0.3em;
-    color: var(--color-text-primary);
-  }
-  .loader-bar {
-    width: 220px;
-    height: 1px;
-    background: rgba(255,255,255,0.08);
-    position: relative;
-    overflow: hidden;
-  }
-  [data-theme="light"] .loader-bar { background: rgba(0,0,0,0.08); }
-  .loader-bar-fill {
-    position: absolute;
-    inset: 0;
-    width: 0%;
-    background: var(--color-accent);
-    transition: width 200ms linear;
-  }
-  .loader-pct {
-    font-size: 0.6rem;
-    letter-spacing: 0.4em;
-    color: var(--color-text-secondary);
-    font-variant-numeric: tabular-nums;
-  }
-
-  /* ─────────────────────────────────────────────────────
-     CUSTOM CURSOR
-     ───────────────────────────────────────────────────── */
-  #cursor {
-    position: fixed;
-    top: 0; left: 0;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    border: 1px solid var(--color-accent);
-    background: transparent;
-    pointer-events: none;
-    z-index: 9999;
-    transform: translate(-50%, -50%);
-    transition:
-      width 200ms var(--ease-luxe),
-      height 200ms var(--ease-luxe),
-      background-color 200ms var(--ease-luxe),
-      border-color 600ms var(--ease-luxe);
-    mix-blend-mode: difference;
-  }
-  #cursor.is-hover {
-    width: 40px;
-    height: 40px;
-    background: var(--color-accent-glow);
-    border-color: var(--color-accent);
-    mix-blend-mode: normal;
-  }
-  /* Hide custom cursor on touch devices */
-  @media (hover: none), (pointer: coarse) {
-    #cursor { display: none; }
-    body, a, button { cursor: auto; }
-  }
-
-  /* ─────────────────────────────────────────────────────
-     RESPONSIVE
-     ───────────────────────────────────────────────────── */
-  @media (max-width: 900px) {
-    .top-nav { padding: 0 4vw; }
-    .left-block { left: 4vw; width: min(360px, 70vw); }
-    .right-block { right: 3vw; }
-    .ghost-number-stage { display: none; }
-    .flavor-description { max-width: 100%; }
-  }
-  @media (max-width: 640px) {
-    .right-block { display: none; }
-    .left-block { top: 58%; }
-    .nav-right .nav-divider, .nav-right .nav-label { display: none; }
-  }
-
-  /* Reduce motion */
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { transition-duration: 0.001s !important; animation-duration: 0.001s !important; }
-  }
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition-duration:.001s!important;animation-duration:.001s!important}
+  #scroll-spacer{height:120vh}
+}
 </style>
 </head>
 <body>
@@ -650,19 +217,14 @@
     <span>Flavor</span>
     <span class="flavor-index-line" aria-hidden="true"></span>
   </div>
-
   <div class="flavor-name-stage">
     <h1 class="flavor-name" id="flavor-name">ORIGINAL</h1>
   </div>
-
   <div class="flavor-subtitle" id="flavor-subtitle">Pure Energy</div>
-
   <div class="flavor-separator" aria-hidden="true"></div>
-
   <p class="flavor-description" id="flavor-description">
     The one that started everything. Raw, unfiltered, and built for those who need no explanation.
   </p>
-
   <div class="cta-row">
     <button class="btn btn-primary is-interactive" type="button">Add to Cart</button>
     <button class="btn btn-secondary is-interactive" type="button">Learn More</button>
@@ -677,11 +239,8 @@
   <div class="right-strip">
     <button class="strip-button is-interactive" id="prev-variant" aria-label="Previous flavor">
       <span class="strip-label">Prev</span>
-      <svg class="strip-chevron" viewBox="0 0 10 10" aria-hidden="true">
-        <path d="M1 6 L5 2 L9 6" />
-      </svg>
+      <svg class="strip-chevron" viewBox="0 0 10 10" aria-hidden="true"><path d="M1 6 L5 2 L9 6" /></svg>
     </button>
-
     <div class="strip-divider-row">
       <div class="strip-dots" id="strip-dots" role="tablist">
         <button class="strip-dot is-interactive is-active" data-variant="0" aria-label="Variant 01" role="tab" aria-selected="true"></button>
@@ -691,11 +250,8 @@
       </div>
       <div class="strip-divider" aria-hidden="true"></div>
     </div>
-
     <button class="strip-button is-interactive" id="next-variant" aria-label="Next flavor">
-      <svg class="strip-chevron" viewBox="0 0 10 10" aria-hidden="true">
-        <path d="M1 4 L5 8 L9 4" />
-      </svg>
+      <svg class="strip-chevron" viewBox="0 0 10 10" aria-hidden="true"><path d="M1 4 L5 8 L9 4" /></svg>
       <span class="strip-label">Next</span>
     </button>
   </div>
@@ -717,7 +273,6 @@
       <svg viewBox="0 0 24 24"><path d="M14 4 V14.5 A3.5 3.5 0 1 1 10.5 11 M14 4 C14 6 15.5 8 18 8"></path></svg>
     </a>
   </div>
-
   <div class="scroll-indicator">
     <div class="scroll-label">Scroll</div>
     <div class="scroll-bar"><div class="scroll-bar-fill" id="scroll-bar-fill"></div></div>
@@ -733,123 +288,99 @@
 
 <script>
 "use strict";
-
 (() => {
-  /* ─────────────────────────────────────────────────────
-     CONFIG — variants + theme colors
-     ───────────────────────────────────────────────────── */
+  /* ─── CONFIG ───────────────────────────────────────── */
   const VARIANTS = [
-    {
-      id: 0, num: "01",
-      name: "ORIGINAL",
-      subtitle: "Pure Energy",
-      description: "The one that started everything. Raw, unfiltered, and built for those who need no explanation.",
-      accent: "#CC2200",
-      glow:   "rgba(204, 34, 0, 0.25)",
-      soft:   "rgba(204, 34, 0, 0.12)",
-      folder: "frames-original",
-    },
-    {
-      id: 1, num: "02",
-      name: "DARK ENERGY",
-      subtitle: "Unleash the Voltage",
-      description: "Concentrated power in every drop. For moments when ordinary energy simply isn't enough.",
-      accent: "#E8A000",
-      glow:   "rgba(232, 160, 0, 0.25)",
-      soft:   "rgba(232, 160, 0, 0.12)",
-      folder: "frames-dark-energy",
-    },
-    {
-      id: 2, num: "03",
-      name: "TROPICAL MIX",
-      subtitle: "Тропическая Сила",
-      description: "Exotic heat from the tropics. A blend of forgotten fruits that hit like a voltage surge.",
-      accent: "#7B2FBE",
-      glow:   "rgba(123, 47, 190, 0.25)",
-      soft:   "rgba(123, 47, 190, 0.12)",
-      folder: "frames-tropical-mix",
-    },
-    {
-      id: 3, num: "04",
-      name: "FRUIT PUNCH",
-      subtitle: "Maximum Impact",
-      description: "A collision of tropical forces. Multiple fruits. One controlled detonation.",
-      accent: "#1A6FCC",
-      glow:   "rgba(26, 111, 204, 0.25)",
-      soft:   "rgba(26, 111, 204, 0.12)",
-      folder: "frames-fruit-punch",
-    },
+    {id:0,num:"01",name:"ORIGINAL",    subtitle:"Pure Energy",          description:"The one that started everything. Raw, unfiltered, and built for those who need no explanation.", accent:"#CC2200",glow:"rgba(204,34,0,0.25)",  soft:"rgba(204,34,0,0.12)",  folder:"frames-original"},
+    {id:1,num:"02",name:"DARK ENERGY", subtitle:"Unleash the Voltage",  description:"Concentrated power in every drop. For moments when ordinary energy simply isn't enough.",         accent:"#E8A000",glow:"rgba(232,160,0,0.25)", soft:"rgba(232,160,0,0.12)", folder:"frames-dark-energy"},
+    {id:2,num:"03",name:"TROPICAL MIX",subtitle:"Тропическая Сила",     description:"Exotic heat from the tropics. A blend of forgotten fruits that hit like a voltage surge.",         accent:"#7B2FBE",glow:"rgba(123,47,190,0.25)",soft:"rgba(123,47,190,0.12)",folder:"frames-tropical-mix"},
+    {id:3,num:"04",name:"FRUIT PUNCH", subtitle:"Maximum Impact",       description:"A collision of tropical forces. Multiple fruits. One controlled detonation.",                     accent:"#1A6FCC",glow:"rgba(26,111,204,0.25)",soft:"rgba(26,111,204,0.12)",folder:"frames-fruit-punch"},
   ];
-
   const FRAME_COUNT = 192;
   const FRAME_PAD = 3;
+  const SMOOTHING = 0.18;
+  const PRELOAD_CONCURRENCY = 6;
+
+  const isMobile = window.matchMedia("(max-width:640px)").matches;
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+  if (isMobile) document.body.classList.add("is-mobile");
 
   function framePath(folder, idx) {
-    const n = String(idx + 1).padStart(FRAME_PAD, "0");
-    return `${encodeURIComponent(folder)}/frame_${n}.webp`;
+    return folder + "/frame_" + String(idx + 1).padStart(FRAME_PAD, "0") + ".webp";
   }
 
-  /* ─────────────────────────────────────────────────────
-     IMAGE CACHE
-     ───────────────────────────────────────────────────── */
-  // cache[variantId] = Array<HTMLImageElement | null>
+  /* ─── IMAGE CACHE + IN-FLIGHT DEDUP ────────────────── */
   const cache = VARIANTS.map(() => new Array(FRAME_COUNT).fill(null));
+  const inflight = VARIANTS.map(() => new Map());
   const variantLoadedCount = VARIANTS.map(() => 0);
   const variantFullyLoaded = VARIANTS.map(() => false);
 
   function loadFrame(variantId, idx, priority) {
-    const existing = cache[variantId][idx];
-    if (existing) return Promise.resolve(existing);
-    return new Promise((resolve) => {
+    const cached = cache[variantId][idx];
+    if (cached) return Promise.resolve(cached);
+    const flightMap = inflight[variantId];
+    const pending = flightMap.get(idx);
+    if (pending) return pending;
+    const p = new Promise((resolve) => {
       const img = new Image();
       img.decoding = "async";
-      // 'fetchPriority' is best-effort
       try { img.fetchPriority = priority || "auto"; } catch (_) {}
       img.onload = () => {
         cache[variantId][idx] = img;
+        flightMap.delete(idx);
         variantLoadedCount[variantId]++;
-        if (variantLoadedCount[variantId] === FRAME_COUNT) {
-          variantFullyLoaded[variantId] = true;
-        }
+        if (variantLoadedCount[variantId] === FRAME_COUNT) variantFullyLoaded[variantId] = true;
         resolve(img);
       };
       img.onerror = () => {
-        // Mark as a single dummy so we don't hang
-        cache[variantId][idx] = null;
+        flightMap.delete(idx);
         variantLoadedCount[variantId]++;
         resolve(null);
       };
       img.src = framePath(VARIANTS[variantId].folder, idx);
     });
+    flightMap.set(idx, p);
+    return p;
   }
 
-  async function preloadVariantSequential(variantId, onProgress) {
-    // Load in order so first frames are usable ASAP
-    for (let i = 0; i < FRAME_COUNT; i++) {
-      await loadFrame(variantId, i, "high");
-      if (onProgress) onProgress(i + 1, FRAME_COUNT);
+  async function preloadVariantPooled(variantId, onProgress, concurrency) {
+    let nextIdx = 0;
+    let completed = 0;
+    async function worker() {
+      while (true) {
+        const myIdx = nextIdx++;
+        if (myIdx >= FRAME_COUNT) return;
+        await loadFrame(variantId, myIdx, "high");
+        completed++;
+        if (onProgress) onProgress(completed, FRAME_COUNT);
+      }
     }
+    const workers = [];
+    const c = Math.max(1, Math.min(concurrency || PRELOAD_CONCURRENCY, FRAME_COUNT));
+    for (let i = 0; i < c; i++) workers.push(worker());
+    await Promise.all(workers);
   }
 
   async function preloadVariantBackground(variantId) {
-    // Throttled background load — never blocks main thread or active variant
     for (let i = 0; i < FRAME_COUNT; i++) {
-      if (cache[variantId][i]) continue;
+      if (cache[variantId][i] || inflight[variantId].has(i)) continue;
       await loadFrame(variantId, i, "low");
       // Yield to main thread so scroll stays at 60fps
       await new Promise((r) => setTimeout(r, 8));
     }
   }
 
-  /* ─────────────────────────────────────────────────────
-     CANVAS RENDERER (object-fit: cover)
-     ───────────────────────────────────────────────────── */
+  /* ─── CANVAS RENDERER (object-fit cover) ───────────── */
   const canvas = document.getElementById("frame-canvas");
   const ctx = canvas.getContext("2d", { alpha: false });
   let cssW = 0, cssH = 0, dpr = 1;
-  let lastDrawn = { variantId: -1, frameIdx: -1, w: 0, h: 0 };
-  // Last image actually rendered — used while target frame still decoding
+  let voidColor = "#000";
   let lastImage = null;
+
+  function refreshVoidColor() {
+    const v = getComputedStyle(document.body).getPropertyValue("--color-void").trim();
+    if (v) voidColor = v;
+  }
 
   function resizeCanvas() {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -861,8 +392,6 @@
     canvas.style.height = cssH + "px";
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = "high";
-    // Force redraw
-    lastDrawn.frameIdx = -1;
     drawCurrent();
   }
 
@@ -870,29 +399,18 @@
     if (!img) return;
     const cw = canvas.width;
     const ch = canvas.height;
-    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue("--color-void").trim() || "#000";
+    ctx.fillStyle = voidColor;
     ctx.fillRect(0, 0, cw, ch);
-
     const iw = img.naturalWidth || img.width;
     const ih = img.naturalHeight || img.height;
     if (!iw || !ih) return;
-
     const ir = iw / ih;
     const cr = cw / ch;
-
     let dw, dh, dx, dy;
     if (cr > ir) {
-      // canvas wider — fit by width, crop top/bottom
-      dw = cw;
-      dh = cw / ir;
-      dx = 0;
-      dy = (ch - dh) / 2;
+      dw = cw; dh = cw / ir; dx = 0; dy = (ch - dh) / 2;
     } else {
-      // canvas taller — fit by height, crop sides
-      dh = ch;
-      dw = ch * ir;
-      dy = 0;
-      dx = (cw - dw) / 2;
+      dh = ch; dw = ch * ir; dy = 0; dx = (cw - dw) / 2;
     }
     ctx.drawImage(img, dx, dy, dw, dh);
     lastImage = img;
@@ -902,55 +420,42 @@
     const img = cache[currentVariant][currentFrame];
     if (img) {
       drawImageCover(img);
-      lastDrawn = { variantId: currentVariant, frameIdx: currentFrame, w: canvas.width, h: canvas.height };
-    } else {
-      // Find nearest already-loaded frame in current variant — keeps display fluid
-      let nearest = null;
-      for (let r = 1; r < FRAME_COUNT; r++) {
-        const back  = currentFrame - r;
-        const fwd   = currentFrame + r;
-        if (back >= 0 && cache[currentVariant][back]) { nearest = cache[currentVariant][back]; break; }
-        if (fwd  < FRAME_COUNT && cache[currentVariant][fwd]) { nearest = cache[currentVariant][fwd]; break; }
-      }
-      if (nearest) {
-        drawImageCover(nearest);
-      } else if (lastImage) {
-        drawImageCover(lastImage);
-      }
+      return;
     }
+    // Fall back to nearest already-loaded frame in the current variant
+    const lane = cache[currentVariant];
+    let nearest = null;
+    for (let r = 1; r < FRAME_COUNT; r++) {
+      const back = currentFrame - r;
+      const fwd  = currentFrame + r;
+      if (back >= 0 && lane[back]) { nearest = lane[back]; break; }
+      if (fwd  < FRAME_COUNT && lane[fwd]) { nearest = lane[fwd]; break; }
+    }
+    if (nearest) drawImageCover(nearest);
+    else if (lastImage) drawImageCover(lastImage);
   }
 
-  /* ─────────────────────────────────────────────────────
-     SCROLL → FRAME MAPPING (rAF interpolation)
-     ───────────────────────────────────────────────────── */
+  /* ─── SCROLL → FRAME (rAF lerp, idle-suspended) ────── */
   let currentVariant = 0;
   let currentFrame = 0;
   let targetFrame = 0;
-  let displayedFrame = 0; // smoothed (lerped) frame
-  let scrollProgress = 0; // 0..1
-  let isSwitching = false;
+  let displayedFrame = 0;
+  let scrollProgress = 0;
+  let rafHandle = 0;
+  let tickPending = false;
 
-  const SMOOTHING = 0.18; // fractional approach per rAF tick
-
-  function computeScrollProgress() {
-    const max = Math.max(1,
-      document.documentElement.scrollHeight - window.innerHeight);
-    const y = Math.min(max, Math.max(0, window.scrollY || window.pageYOffset || 0));
-    return y / max;
-  }
-
-  function onScroll() {
-    scrollProgress = computeScrollProgress();
-    targetFrame = Math.round(scrollProgress * (FRAME_COUNT - 1));
-    // Immediately update progress UI (cheap)
-    updateScrollUI();
+  function scheduleTick() {
+    if (tickPending) return;
+    tickPending = true;
+    rafHandle = requestAnimationFrame(tick);
   }
 
   function tick() {
-    // Smoothly approach targetFrame for fluid movement between scroll events
+    tickPending = false;
     const diff = targetFrame - displayedFrame;
     if (Math.abs(diff) > 0.001) {
       displayedFrame += diff * SMOOTHING;
+      scheduleTick();
     } else {
       displayedFrame = targetFrame;
     }
@@ -960,35 +465,41 @@
       drawCurrent();
       updateFrameCounter();
     }
-    rafHandle = requestAnimationFrame(tick);
   }
-  let rafHandle = null;
 
-  /* ─────────────────────────────────────────────────────
-     UI UPDATES
-     ───────────────────────────────────────────────────── */
-  const elFlavorName = document.getElementById("flavor-name");
+  function computeScrollProgress() {
+    const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    const y = Math.min(max, Math.max(0, window.scrollY || window.pageYOffset || 0));
+    return y / max;
+  }
+
+  function onScroll() {
+    scrollProgress = computeScrollProgress();
+    targetFrame = Math.round(scrollProgress * (FRAME_COUNT - 1));
+    updateScrollUI();
+    scheduleTick();
+  }
+
+  /* ─── UI UPDATES ───────────────────────────────────── */
+  const elFlavorName     = document.getElementById("flavor-name");
   const elFlavorSubtitle = document.getElementById("flavor-subtitle");
-  const elFlavorDesc = document.getElementById("flavor-description");
-  const elGhostNum = document.getElementById("ghost-number");
-  const elFrameCounter = document.getElementById("frame-counter");
-  const elScrollBarFill = document.getElementById("scroll-bar-fill");
-  const elBottomCluster = document.getElementById("bottom-cluster");
+  const elFlavorDesc     = document.getElementById("flavor-description");
+  const elGhostNum       = document.getElementById("ghost-number");
+  const elFrameCounter   = document.getElementById("frame-counter");
+  const elScrollBarFill  = document.getElementById("scroll-bar-fill");
+  const elBottomCluster  = document.getElementById("bottom-cluster");
+  const elThemeToggle    = document.getElementById("theme-toggle");
+  const elThemeColorMeta = document.querySelector('meta[name="theme-color"]');
   const dotEls = Array.from(document.querySelectorAll(".strip-dot"));
+  const totalLabel = String(FRAME_COUNT).padStart(3, "0");
 
   function updateFrameCounter() {
-    const n = String(currentFrame + 1).padStart(3, "0");
-    const t = String(FRAME_COUNT).padStart(3, "0");
-    elFrameCounter.textContent = `${n} / ${t}`;
+    elFrameCounter.textContent = String(currentFrame + 1).padStart(3, "0") + " / " + totalLabel;
   }
 
   function updateScrollUI() {
     elScrollBarFill.style.width = (scrollProgress * 100).toFixed(2) + "%";
-    if (scrollProgress > 0.8) {
-      elBottomCluster.classList.add("fade-out");
-    } else {
-      elBottomCluster.classList.remove("fade-out");
-    }
+    elBottomCluster.classList.toggle("fade-out", scrollProgress > 0.8);
   }
 
   function setAccentColors(v) {
@@ -996,31 +507,27 @@
     root.setProperty("--color-accent", v.accent);
     root.setProperty("--color-accent-glow", v.glow);
     root.setProperty("--color-accent-soft", v.soft);
-    document.querySelector('meta[name="theme-color"]').setAttribute("content", v.accent);
+    if (elThemeColorMeta) elThemeColorMeta.setAttribute("content", v.accent);
   }
 
   function setActiveDot(idx) {
-    dotEls.forEach((d, i) => {
+    for (let i = 0; i < dotEls.length; i++) {
       const active = i === idx;
-      d.classList.toggle("is-active", active);
-      d.setAttribute("aria-selected", active ? "true" : "false");
-    });
+      dotEls[i].classList.toggle("is-active", active);
+      dotEls[i].setAttribute("aria-selected", active ? "true" : "false");
+    }
   }
 
-  // Slide-out → slide-in helper for text elements
   function swapTextWithSlide(el, newText) {
     el.classList.add("exit-up");
     setTimeout(() => {
       el.textContent = newText;
       el.classList.remove("exit-up");
       el.classList.add("enter-from-below");
-      // force reflow
-      void el.offsetWidth;
+      void el.offsetWidth; // reflow
       el.classList.add("enter-active");
       el.classList.remove("enter-from-below");
-      setTimeout(() => {
-        el.classList.remove("enter-active");
-      }, 450);
+      setTimeout(() => el.classList.remove("enter-active"), 450);
     }, 300);
   }
 
@@ -1028,39 +535,27 @@
     elFlavorDesc.classList.add("fading");
     setTimeout(() => {
       elFlavorDesc.textContent = newText;
-      // delay slightly to align with name swap completion
-      setTimeout(() => {
-        elFlavorDesc.classList.remove("fading");
-      }, 150);
+      setTimeout(() => elFlavorDesc.classList.remove("fading"), 150);
     }, 200);
   }
 
-  /* ─────────────────────────────────────────────────────
-     VARIANT SWITCHING
-     ───────────────────────────────────────────────────── */
+  /* ─── VARIANT SWITCHING ────────────────────────────── */
   let switchDebounce = false;
 
-  function switchToVariant(newId, opts = {}) {
+  function switchToVariant(newId, opts) {
     if (switchDebounce) return;
-    if (newId === currentVariant && !opts.force) return;
+    if (newId === currentVariant && !(opts && opts.force)) return;
     switchDebounce = true;
     setTimeout(() => { switchDebounce = false; }, 700);
 
     const v = VARIANTS[newId];
-    isSwitching = true;
-
-    // 1. Accent shift starts immediately (CSS @property transition)
     setAccentColors(v);
     setActiveDot(newId);
-
-    // 2. Cross-fade animation: kick name out, slide in
     swapTextWithSlide(elFlavorName, v.name);
     swapTextWithSlide(elGhostNum, v.num);
-
-    // 3. Description fade-out → in
     fadeSwapDescription(v.description);
 
-    // 4. Subtitle and index num — quick fade
+    // Subtitle quick fade
     elFlavorSubtitle.style.transition = "opacity 200ms var(--ease-luxe), color 600ms var(--ease-luxe)";
     elFlavorSubtitle.style.opacity = "0";
     setTimeout(() => {
@@ -1068,57 +563,43 @@
       elFlavorSubtitle.style.opacity = "1";
     }, 220);
 
-
-    // 5. Reset scroll position to 0 — start variant animation fresh
+    // Reset scroll position so new variant animation starts fresh
     currentVariant = newId;
     targetFrame = 0;
     displayedFrame = 0;
     currentFrame = 0;
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    if (!isMobile) window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    updateFrameCounter();
+    updateScrollUI();
 
-    // 6. Cross-fade canvas to first frame of new variant
+    // Cross-fade canvas to first frame of new variant
     const drawNewFrame = () => {
       const img = cache[newId][0];
-      if (img) {
-        // Smooth cross-fade by briefly lowering then restoring opacity
-        canvas.style.transition = "opacity 220ms var(--ease-luxe)";
-        canvas.style.opacity = "0";
-        setTimeout(() => {
-          drawImageCover(img);
-          canvas.style.opacity = "1";
-          setTimeout(() => { canvas.style.transition = ""; isSwitching = false; }, 240);
-        }, 200);
-      } else {
-        // First frame not yet loaded — try to fetch quickly then draw
+      if (!img) {
         loadFrame(newId, 0, "high").then(() => drawCurrent());
-        isSwitching = false;
+        return;
       }
+      canvas.style.transition = "opacity 220ms var(--ease-luxe)";
+      canvas.style.opacity = "0";
+      setTimeout(() => {
+        drawImageCover(img);
+        canvas.style.opacity = "1";
+        setTimeout(() => { canvas.style.transition = ""; }, 240);
+      }, 200);
     };
+    if (variantLoadedCount[newId] >= 1) drawNewFrame();
+    else loadFrame(newId, 0, "high").then(drawNewFrame);
 
-    if (variantLoadedCount[newId] >= 1) {
-      drawNewFrame();
-    } else {
-      // Variant not yet preloaded — show loading-friendly behavior
-      loadFrame(newId, 0, "high").then(drawNewFrame);
-    }
-
-    updateFrameCounter();
-
-    // Kick off background preload of remaining frames if not done
-    if (!variantFullyLoaded[newId]) {
-      preloadVariantBackground(newId);
-    }
+    // Kick off background preload of remaining frames if not done (skip on mobile to save bandwidth)
+    if (!isMobile && !variantFullyLoaded[newId]) preloadVariantBackground(newId);
   }
 
-  /* ─────────────────────────────────────────────────────
-     THEME TOGGLE
-     ───────────────────────────────────────────────────── */
-  const elThemeToggle = document.getElementById("theme-toggle");
+  /* ─── THEME TOGGLE ─────────────────────────────────── */
   function setTheme(mode) {
     document.documentElement.dataset.theme = mode;
     elThemeToggle.setAttribute("aria-pressed", mode === "light" ? "true" : "false");
     try { localStorage.setItem("burn-theme", mode); } catch (_) {}
-    // Redraw canvas (fill color uses --color-void)
+    refreshVoidColor();
     drawCurrent();
   }
   function initTheme() {
@@ -1130,60 +611,51 @@
     setTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light");
   });
 
-  /* ─────────────────────────────────────────────────────
-     CUSTOM CURSOR — lerp trail
-     ───────────────────────────────────────────────────── */
+  /* ─── CUSTOM CURSOR (idle-suspended lerp) ──────────── */
   const cursor = document.getElementById("cursor");
   let mx = window.innerWidth / 2, my = window.innerHeight / 2;
   let cx = mx, cy = my;
-  let cursorRaf = null;
+  let cursorActive = false;
 
   function cursorTick() {
-    // 6-frame lerp: each frame approach by ~1/6 of the gap
     cx += (mx - cx) / 6;
     cy += (my - cy) / 6;
-    cursor.style.transform = `translate(${cx}px, ${cy}px) translate(-50%, -50%)`;
-    cursorRaf = requestAnimationFrame(cursorTick);
+    cursor.style.transform = "translate(" + cx + "px," + cy + "px) translate(-50%,-50%)";
+    if (Math.abs(mx - cx) > 0.1 || Math.abs(my - cy) > 0.1) {
+      requestAnimationFrame(cursorTick);
+    } else {
+      cursorActive = false;
+    }
+  }
+  function startCursor() {
+    if (cursorActive) return;
+    cursorActive = true;
+    requestAnimationFrame(cursorTick);
   }
 
   document.addEventListener("mousemove", (e) => {
     mx = e.clientX;
     my = e.clientY;
+    startCursor();
   }, { passive: true });
 
-  // Cursor hover state on interactive elements
-  function bindCursorHover() {
-    document.addEventListener("mouseover", (e) => {
-      if (e.target.closest(".is-interactive, a, button")) {
-        cursor.classList.add("is-hover");
-      }
-    });
-    document.addEventListener("mouseout", (e) => {
-      if (e.target.closest(".is-interactive, a, button")) {
-        cursor.classList.remove("is-hover");
-      }
-    });
-  }
+  document.addEventListener("mouseover", (e) => {
+    if (e.target.closest && e.target.closest(".is-interactive,a,button")) cursor.classList.add("is-hover");
+  });
+  document.addEventListener("mouseout", (e) => {
+    if (e.target.closest && e.target.closest(".is-interactive,a,button")) cursor.classList.remove("is-hover");
+  });
 
-  /* ─────────────────────────────────────────────────────
-     EVENT BINDINGS
-     ───────────────────────────────────────────────────── */
+  /* ─── EVENT BINDINGS ───────────────────────────────── */
   document.getElementById("prev-variant").addEventListener("click", () => {
-    const next = (currentVariant - 1 + VARIANTS.length) % VARIANTS.length;
-    switchToVariant(next);
+    switchToVariant((currentVariant - 1 + VARIANTS.length) % VARIANTS.length);
   });
   document.getElementById("next-variant").addEventListener("click", () => {
-    const next = (currentVariant + 1) % VARIANTS.length;
-    switchToVariant(next);
+    switchToVariant((currentVariant + 1) % VARIANTS.length);
   });
   dotEls.forEach((dot) => {
-    dot.addEventListener("click", () => {
-      const id = parseInt(dot.dataset.variant, 10);
-      switchToVariant(id);
-    });
+    dot.addEventListener("click", () => switchToVariant(parseInt(dot.dataset.variant, 10)));
   });
-
-  // Keyboard: arrow keys swap variants
   document.addEventListener("keydown", (e) => {
     if (e.key === "ArrowRight" || e.key === "ArrowDown") {
       e.preventDefault();
@@ -1194,53 +666,52 @@
     }
   });
 
+  // rAF-throttled resize so dragging the window doesn't thrash drawImage
+  let resizeQueued = false;
+  function queueResize() {
+    if (resizeQueued) return;
+    resizeQueued = true;
+    requestAnimationFrame(() => { resizeQueued = false; resizeCanvas(); });
+  }
   window.addEventListener("scroll", onScroll, { passive: true });
-  window.addEventListener("resize", resizeCanvas, { passive: true });
-  window.addEventListener("orientationchange", resizeCanvas, { passive: true });
+  window.addEventListener("resize", queueResize, { passive: true });
+  window.addEventListener("orientationchange", queueResize, { passive: true });
 
-  /* ─────────────────────────────────────────────────────
-     BOOT
-     ───────────────────────────────────────────────────── */
-  const elLoader = document.getElementById("loader");
+  /* ─── BOOT ─────────────────────────────────────────── */
+  const elLoader     = document.getElementById("loader");
   const elLoaderFill = document.getElementById("loader-bar-fill");
-  const elLoaderPct = document.getElementById("loader-pct");
+  const elLoaderPct  = document.getElementById("loader-pct");
 
   async function boot() {
     initTheme();
     setAccentColors(VARIANTS[0]);
     resizeCanvas();
-    cursorTick();
-    bindCursorHover();
+    refreshVoidColor();
 
-    // Preload variant 0 fully for buttery first-scroll feel
-    await preloadVariantSequential(0, (loaded, total) => {
+    // Fully preload variant 0 with limited concurrency for buttery first scroll
+    await preloadVariantPooled(0, (loaded, total) => {
       const pct = Math.round((loaded / total) * 100);
       elLoaderFill.style.width = pct + "%";
       elLoaderPct.textContent = pct + "%";
-    });
+    }, PRELOAD_CONCURRENCY);
 
-    // Initial draw
     drawCurrent();
     updateFrameCounter();
     onScroll();
 
-    // Start frame loop
-    if (!rafHandle) tick();
-
-    // Reveal UI
     setTimeout(() => {
       elLoader.classList.add("hidden");
       document.body.classList.add("loaded");
     }, 200);
 
-    // Background-preload remaining variants in order
-    setTimeout(async () => {
-      for (let v = 1; v < VARIANTS.length; v++) {
-        if (!variantFullyLoaded[v]) {
-          await preloadVariantBackground(v);
+    // Background-preload remaining variants — skip on mobile to save bandwidth
+    if (!isMobile) {
+      setTimeout(async () => {
+        for (let v = 1; v < VARIANTS.length; v++) {
+          if (!variantFullyLoaded[v]) await preloadVariantBackground(v);
         }
-      }
-    }, 1200);
+      }, 1200);
+    }
   }
 
   boot().catch((err) => {
