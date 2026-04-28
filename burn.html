@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BURN Energy Drink</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════
+   CSS CUSTOM PROPERTIES
+   ═══════════════════════════════════════════════════════════ */
+:root {
+  --color-void: #000000;
+  --color-surface: #0A0A0A;
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: rgba(255,255,255,0.45);
+  --color-accent: #CC2200;
+  --color-accent-glow: rgba(204,34,0,0.25);
+  --color-border: rgba(255,255,255,0.08);
+  --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
+  --bg: #000000;
+  --text-primary: #FFFFFF;
+  --text-secondary: rgba(255,255,255,0.45);
+  --overlay-edge: rgba(0,0,0,0.75);
+  --btn-border: rgba(255,255,255,0.25);
+  --nav-dot-inactive: rgba(255,255,255,0.2);
+  --social-icon: rgba(255,255,255,0.3);
+  --scroll-track: rgba(255,255,255,0.1);
+}
+
+:root.light {
+  --bg: #F0EDE8;
+  --text-primary: #0A0A0A;
+  --text-secondary: rgba(0,0,0,0.45);
+  --overlay-edge: rgba(240,237,232,0.75);
+  --btn-border: rgba(0,0,0,0.25);
+  --nav-dot-inactive: rgba(0,0,0,0.2);
+  --social-icon: rgba(0,0,0,0.3);
+  --scroll-track: rgba(0,0,0,0.1);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESET & BASE
+   ═══════════════════════════════════════════════════════════ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html {
+  overflow-y: scroll;
+  scrollbar-width: none;
+}
+html::-webkit-scrollbar { display: none; }
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  cursor: none;
+  overflow-x: hidden;
+  transition: background 500ms var(--ease-out-expo), color 500ms var(--ease-out-expo);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCROLL CONTAINER
+   ═══════════════════════════════════════════════════════════ */
+#scroll-container {
+  height: 600vh;
+  position: relative;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LOADING SCREEN
+   ═══════════════════════════════════════════════════════════ */
+#loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 600ms var(--ease-out-expo);
+}
+#loader.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+#loader .logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.4rem;
+  letter-spacing: 0.3em;
+  color: #fff;
+}
+#loader .progress-track {
+  width: 200px;
+  height: 2px;
+  background: rgba(255,255,255,0.1);
+  margin-top: 24px;
+  border-radius: 1px;
+  overflow: hidden;
+}
+#loader .progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--color-accent);
+  transition: width 100ms linear, background 600ms var(--ease-out-expo);
+  border-radius: 1px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FIXED VIEWPORT
+   ═══════════════════════════════════════════════════════════ */
+#viewport {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* Layer 1: Animation canvas */
+#anim-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+
+/* Layer 2: Gradient overlay */
+#gradient-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: radial-gradient(ellipse at center, transparent 30%, var(--overlay-edge) 100%);
+  pointer-events: none;
+  transition: background 500ms var(--ease-out-expo);
+}
+
+/* Layer 3: UI layer */
+#ui-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+#ui-layer > * {
+  pointer-events: auto;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TOP NAVIGATION BAR
+   ═══════════════════════════════════════════════════════════ */
+#top-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 72px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5vw;
+}
+#top-nav::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background: linear-gradient(to bottom, var(--bg), transparent);
+  z-index: -1;
+  pointer-events: none;
+  transition: background 500ms var(--ease-out-expo);
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+.nav-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.5rem;
+  letter-spacing: 0.3em;
+  color: var(--text-primary);
+  transition: color 500ms var(--ease-out-expo);
+  white-space: nowrap;
+}
+.nav-logo-line {
+  height: 2px;
+  background: var(--color-accent);
+  margin-left: 12px;
+  width: 0;
+  transition: width 800ms var(--ease-out-expo) 400ms, background 600ms var(--ease-out-expo);
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+/* Dark/Light toggle */
+.mode-toggle {
+  width: 34px;
+  height: 18px;
+  border-radius: 9px;
+  background: var(--text-primary);
+  position: relative;
+  cursor: none;
+  transition: background 500ms var(--ease-out-expo);
+  flex-shrink: 0;
+}
+.mode-toggle .knob {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--bg);
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  transition: transform 300ms var(--ease-out-expo), background 500ms var(--ease-out-expo);
+}
+:root.light .mode-toggle .knob {
+  transform: translateX(16px);
+}
+
+.nav-separator {
+  width: 1px;
+  height: 24px;
+  background: rgba(255,255,255,0.2);
+  flex-shrink: 0;
+  transition: background 500ms var(--ease-out-expo);
+}
+:root.light .nav-separator {
+  background: rgba(0,0,0,0.2);
+}
+
+.nav-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  color: var(--text-secondary);
+  font-weight: 300;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: color 500ms var(--ease-out-expo);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LEFT CONTENT BLOCK
+   ═══════════════════════════════════════════════════════════ */
+#left-content {
+  position: fixed;
+  left: 6vw;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  max-width: 380px;
+}
+
+.flavor-index {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.flavor-index-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.35em;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  font-weight: 300;
+  transition: color 600ms var(--ease-out-expo);
+}
+.flavor-index-line {
+  width: 32px;
+  height: 1px;
+  background: var(--color-accent);
+  transition: background 600ms var(--ease-out-expo);
+}
+
+.flavor-name-wrapper {
+  overflow: hidden;
+  position: relative;
+  height: auto;
+}
+.flavor-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(4rem, 7vw, 6.5rem);
+  line-height: 0.9;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
+  transition: color 500ms var(--ease-out-expo);
+}
+
+.flavor-subtitle {
+  font-size: 0.9rem;
+  letter-spacing: 0.25em;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  margin-top: 12px;
+  font-weight: 300;
+  transition: color 600ms var(--ease-out-expo);
+}
+
+.flavor-separator {
+  width: 48px;
+  height: 1px;
+  background: var(--color-accent);
+  margin: 24px 0;
+  transition: background 600ms var(--ease-out-expo);
+}
+
+.flavor-description {
+  font-size: 0.85rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  max-width: 280px;
+  font-weight: 300;
+  transition: color 500ms var(--ease-out-expo);
+}
+
+.cta-buttons {
+  display: flex;
+  gap: 16px;
+  margin-top: 32px;
+  flex-wrap: wrap;
+}
+
+.btn-cart {
+  height: 48px;
+  padding: 0 28px;
+  border-radius: 2px;
+  border: none;
+  background: var(--color-accent);
+  color: #000;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.15em;
+  cursor: none;
+  transition: all 250ms var(--ease-out-expo);
+}
+.btn-cart:hover {
+  filter: brightness(1.15);
+  transform: scale(1.02);
+  box-shadow: 0 8px 32px var(--color-accent-glow);
+}
+
+.btn-learn {
+  height: 48px;
+  padding: 0 28px;
+  border-radius: 2px;
+  border: 1px solid var(--btn-border);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.15em;
+  cursor: none;
+  transition: all 250ms var(--ease-out-expo);
+}
+.btn-learn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RIGHT VARIANT NAVIGATION
+   ═══════════════════════════════════════════════════════════ */
+#right-nav {
+  position: fixed;
+  right: 5vw;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.ghost-number-wrapper {
+  overflow: hidden;
+  position: relative;
+}
+.ghost-number {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(6rem, 12vw, 11rem);
+  color: rgba(255,255,255,0.04);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  user-select: none;
+  transition: color 500ms var(--ease-out-expo);
+}
+:root.light .ghost-number {
+  color: rgba(0,0,0,0.04);
+}
+
+.nav-strip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  margin-left: -20px;
+  z-index: 2;
+}
+
+.nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: none;
+  padding: 8px;
+}
+.nav-btn-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.55rem;
+  letter-spacing: 0.3em;
+  color: var(--text-secondary);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  text-transform: uppercase;
+  font-weight: 300;
+  transition: color 250ms var(--ease-out-expo);
+}
+.nav-btn:hover .nav-btn-label {
+  color: var(--color-accent);
+}
+.nav-btn svg {
+  stroke: var(--text-primary);
+  transition: stroke 250ms var(--ease-out-expo);
+}
+.nav-btn:hover svg {
+  stroke: var(--color-accent);
+}
+
+.nav-divider {
+  width: 1px;
+  height: 64px;
+  background: linear-gradient(to bottom, transparent, var(--color-accent), transparent);
+  margin: 8px 0;
+  transition: background 600ms var(--ease-out-expo);
+}
+
+.nav-dots {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: absolute;
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.nav-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--nav-dot-inactive);
+  border: none;
+  cursor: none;
+  padding: 0;
+  transition: all 400ms var(--ease-out-expo);
+}
+.nav-dot.active {
+  background: var(--color-accent);
+  box-shadow: 0 0 8px var(--color-accent);
+  transform: scale(1.4);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SOCIAL ICONS
+   ═══════════════════════════════════════════════════════════ */
+#social-icons {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+#social-icons a {
+  color: var(--social-icon);
+  transition: color 250ms var(--ease-out-expo), transform 250ms var(--ease-out-expo);
+  cursor: none;
+  display: flex;
+}
+#social-icons a:hover {
+  color: var(--color-accent);
+  transform: scale(1.1);
+}
+#social-icons svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCROLL PROGRESS INDICATOR
+   ═══════════════════════════════════════════════════════════ */
+#scroll-indicator {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  transition: opacity 400ms var(--ease-out-expo);
+}
+#scroll-indicator.faded { opacity: 0; }
+
+.scroll-label {
+  font-size: 0.55rem;
+  letter-spacing: 0.4em;
+  color: var(--text-secondary);
+  font-weight: 300;
+  text-transform: uppercase;
+  transition: color 500ms var(--ease-out-expo);
+}
+.scroll-track {
+  width: 120px;
+  height: 1px;
+  background: var(--scroll-track);
+  position: relative;
+  transition: background 500ms var(--ease-out-expo);
+}
+.scroll-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0%;
+  background: var(--color-accent);
+  transition: background 600ms var(--ease-out-expo);
+}
+.scroll-frame-count {
+  font-size: 0.55rem;
+  letter-spacing: 0.4em;
+  color: var(--text-secondary);
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  transition: color 500ms var(--ease-out-expo);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CUSTOM CURSOR
+   ═══════════════════════════════════════════════════════════ */
+#custom-cursor {
+  position: fixed;
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--color-accent);
+  border-radius: 50%;
+  background: transparent;
+  pointer-events: none;
+  z-index: 10000;
+  transform: translate(-50%, -50%);
+  transition: width 200ms var(--ease-out-expo),
+              height 200ms var(--ease-out-expo),
+              background 200ms var(--ease-out-expo),
+              border-color 600ms var(--ease-out-expo);
+  will-change: transform;
+}
+#custom-cursor.hover {
+  width: 40px;
+  height: 40px;
+  background: var(--color-accent-glow);
+  border-color: var(--color-accent);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   INTRO ANIMATIONS
+   ═══════════════════════════════════════════════════════════ */
+.intro-hidden { opacity: 0; }
+.intro-left { opacity: 0; transform: translateX(-20px); }
+.intro-up { opacity: 0; transform: translateY(40px); }
+.intro-right { opacity: 0; transform: translateX(20px); }
+.intro-fade { opacity: 0; }
+.intro-reveal {
+  opacity: 1 !important;
+  transform: translate(0,0) !important;
+  transition: opacity 500ms var(--ease-out-expo), transform 500ms var(--ease-out-expo);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  #left-content { left: 4vw; max-width: 280px; }
+  .flavor-name { font-size: clamp(2.5rem, 8vw, 4rem); }
+  #right-nav { right: 3vw; }
+  .ghost-number { font-size: clamp(4rem, 10vw, 7rem); }
+  .cta-buttons { flex-direction: column; }
+}
+@media (max-width: 600px) {
+  #left-content { left: 5vw; max-width: 60vw; }
+  #right-nav { display: none; }
+  .flavor-description { max-width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     LOADING SCREEN
+     ═══════════════════════════════════════════════════════════ -->
+<div id="loader">
+  <div class="logo">BURN</div>
+  <div class="progress-track">
+    <div class="progress-fill" id="loader-fill"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCROLL CONTAINER (drives animation)
+     ═══════════════════════════════════════════════════════════ -->
+<div id="scroll-container">
+
+  <!-- ═════════ FIXED VIEWPORT ═════════ -->
+  <div id="viewport">
+    <!-- Layer 1: Animation frame -->
+    <img id="anim-canvas" src="" alt="BURN Energy Drink">
+
+    <!-- Layer 2: Gradient overlay -->
+    <div id="gradient-overlay"></div>
+
+    <!-- Layer 3: UI -->
+    <div id="ui-layer">
+
+      <!-- ─── TOP NAVIGATION BAR ─── -->
+      <nav id="top-nav">
+        <div class="nav-left">
+          <span class="nav-logo intro-hidden">BURN</span>
+          <div class="nav-logo-line" id="logo-line"></div>
+        </div>
+        <div class="nav-right">
+          <div class="mode-toggle" id="mode-toggle" role="button" aria-label="Toggle dark/light mode">
+            <div class="knob"></div>
+          </div>
+          <div class="nav-separator"></div>
+          <span class="nav-label">ENERGY DRINK</span>
+        </div>
+      </nav>
+
+      <!-- ─── LEFT CONTENT BLOCK ─── -->
+      <div id="left-content">
+        <div class="flavor-index intro-left">
+          <span class="flavor-index-label">FLAVOR</span>
+          <div class="flavor-index-line"></div>
+        </div>
+        <div class="flavor-name-wrapper">
+          <div class="flavor-name intro-up" id="flavor-name">ORIGINAL</div>
+        </div>
+        <div class="flavor-subtitle intro-fade" id="flavor-subtitle">Pure Energy</div>
+        <div class="flavor-separator intro-fade"></div>
+        <p class="flavor-description intro-fade" id="flavor-desc">The one that started everything. Raw, unfiltered, and built for those who need no explanation.</p>
+        <div class="cta-buttons intro-fade">
+          <button class="btn-cart">ADD TO CART</button>
+          <button class="btn-learn">LEARN MORE</button>
+        </div>
+      </div>
+
+      <!-- ─── RIGHT VARIANT NAVIGATION ─── -->
+      <div id="right-nav" class="intro-right">
+        <div class="ghost-number-wrapper">
+          <div class="ghost-number" id="ghost-number">01</div>
+        </div>
+        <div class="nav-strip">
+          <button class="nav-btn" id="btn-prev" aria-label="Previous variant">
+            <span class="nav-btn-label">PREV</span>
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke-width="1.5">
+              <polyline points="1,7 5,3 9,7"/>
+            </svg>
+          </button>
+          <div class="nav-dots" id="nav-dots">
+            <button class="nav-dot active" data-index="0" aria-label="Variant 1"></button>
+            <button class="nav-dot" data-index="1" aria-label="Variant 2"></button>
+            <button class="nav-dot" data-index="2" aria-label="Variant 3"></button>
+            <button class="nav-dot" data-index="3" aria-label="Variant 4"></button>
+          </div>
+          <div class="nav-divider"></div>
+          <button class="nav-btn" id="btn-next" aria-label="Next variant">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke-width="1.5">
+              <polyline points="1,3 5,7 9,3"/>
+            </svg>
+            <span class="nav-btn-label">NEXT</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ─── SOCIAL ICONS ─── -->
+      <div id="social-icons" class="intro-fade">
+        <!-- Instagram -->
+        <a href="#" aria-label="Instagram">
+          <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></svg>
+        </a>
+        <!-- X / Twitter -->
+        <a href="#" aria-label="X">
+          <svg viewBox="0 0 24 24"><path d="M4 4l6.5 8L4 20h2l5.5-6.8L16 20h4l-6.8-8.5L19.5 4h-2l-5 6.2L8 4H4z"/></svg>
+        </a>
+        <!-- YouTube -->
+        <a href="#" aria-label="YouTube">
+          <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="4"/><polygon points="10,8 16,12 10,16" fill="currentColor" stroke="none"/></svg>
+        </a>
+        <!-- TikTok -->
+        <a href="#" aria-label="TikTok">
+          <svg viewBox="0 0 24 24"><path d="M12 2v13a4 4 0 1 1-3-3.87"/><path d="M12 2c0 3 2.5 5 5.5 5"/></svg>
+        </a>
+      </div>
+
+      <!-- ─── SCROLL PROGRESS INDICATOR ─── -->
+      <div id="scroll-indicator" class="intro-fade">
+        <span class="scroll-label">SCROLL</span>
+        <div class="scroll-track">
+          <div class="scroll-fill" id="scroll-fill"></div>
+        </div>
+        <span class="scroll-frame-count" id="scroll-frame-count">001 / 192</span>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CUSTOM CURSOR
+     ═══════════════════════════════════════════════════════════ -->
+<div id="custom-cursor"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   CONFIGURATION
+   ═══════════════════════════════════════════════════════════ */
+const VARIANTS = [
+  {
+    name: 'ORIGINAL',
+    subtitle: 'Pure Energy',
+    description: 'The one that started everything. Raw, unfiltered, and built for those who need no explanation.',
+    color: '#CC2200',
+    folder: '\u043A\u0440\u0430\u0441\u043D\u044B\u0439_\u0431\u0435\u0440\u043D_\u043A\u0430\u0434\u0440\u044B'
+  },
+  {
+    name: 'DARK ENERGY',
+    subtitle: 'Unleash the Voltage',
+    description: 'Concentrated power in every drop. For moments when ordinary energy simply isn\u2019t enough.',
+    color: '#E8A000',
+    folder: '\u0436\u0435\u043B\u0442\u044B\u0439_\u0431\u0435\u0440\u043D_\u043A\u0430\u0434\u0440\u044B'
+  },
+  {
+    name: 'TROPICAL MIX',
+    subtitle: '\u0422\u0440\u043E\u043F\u0438\u0447\u0435\u0441\u043A\u0430\u044F \u0421\u0438\u043B\u0430',
+    description: 'Exotic heat from the tropics. A blend of forgotten fruits that hit like a voltage surge.',
+    color: '#7B2FBE',
+    folder: '\u0444\u0438\u043E\u043B\u0435\u0442\u043E\u0432\u044B\u0439_\u0431\u0435\u0440\u043D_\u043A\u0430\u0434\u0440\u044B'
+  },
+  {
+    name: 'FRUIT PUNCH',
+    subtitle: 'Maximum Impact',
+    description: 'A collision of tropical forces. Multiple fruits. One controlled detonation.',
+    color: '#1A6FCC',
+    folder: '\u0441\u0438\u043D\u0438\u0439_\u0431\u0435\u0440\u043D_\u043A\u0430\u0434\u0440\u044B'
+  }
+];
+
+const TOTAL_FRAMES = 192;
+const FRAME_PAD = 4;
+
+/* ═══════════════════════════════════════════════════════════
+   STATE
+   ═══════════════════════════════════════════════════════════ */
+let currentVariant = 0;
+let currentFrame = 0;
+let targetFrame = 0;
+let scrollProgress = 0;
+let switching = false;
+let switchDebounce = null;
+
+const frameCache = {};
+for (let i = 0; i < VARIANTS.length; i++) frameCache[i] = [];
+
+/* ═══════════════════════════════════════════════════════════
+   DOM REFS
+   ═══════════════════════════════════════════════════════════ */
+const canvas = document.getElementById('anim-canvas');
+const loaderEl = document.getElementById('loader');
+const loaderFill = document.getElementById('loader-fill');
+const flavorName = document.getElementById('flavor-name');
+const flavorSubtitle = document.getElementById('flavor-subtitle');
+const flavorDesc = document.getElementById('flavor-desc');
+const ghostNumber = document.getElementById('ghost-number');
+const scrollFill = document.getElementById('scroll-fill');
+const scrollFrameCount = document.getElementById('scroll-frame-count');
+const scrollIndicator = document.getElementById('scroll-indicator');
+const navDots = document.querySelectorAll('.nav-dot');
+const cursor = document.getElementById('custom-cursor');
+
+/* ═══════════════════════════════════════════════════════════
+   FRAME LOADING
+   ═══════════════════════════════════════════════════════════ */
+function framePath(variantIndex, frameIndex) {
+  const num = String(frameIndex + 1).padStart(FRAME_PAD, '0');
+  return `${VARIANTS[variantIndex].folder}/frame_${num}.webp`;
+}
+
+function loadVariantFrames(variantIndex) {
+  return new Promise((resolve) => {
+    let loaded = 0;
+    const total = TOTAL_FRAMES;
+    for (let i = 0; i < total; i++) {
+      if (frameCache[variantIndex][i]) {
+        loaded++;
+        if (loaded === total) resolve();
+        continue;
+      }
+      const img = new Image();
+      img.onload = () => {
+        frameCache[variantIndex][i] = img;
+        loaded++;
+        if (variantIndex === currentVariant) {
+          const pct = Math.round((loaded / total) * 100);
+          loaderFill.style.width = pct + '%';
+        }
+        if (loaded === total) resolve();
+      };
+      img.onerror = () => {
+        loaded++;
+        if (loaded === total) resolve();
+      };
+      img.src = framePath(variantIndex, i);
+    }
+  });
+}
+
+function loadRemainingVariants() {
+  const order = [];
+  for (let i = 0; i < VARIANTS.length; i++) {
+    if (i !== currentVariant) order.push(i);
+  }
+  let chain = Promise.resolve();
+  order.forEach(vi => {
+    chain = chain.then(() => loadVariantFrames(vi));
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   COLOR SYSTEM
+   ═══════════════════════════════════════════════════════════ */
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1,3), 16);
+  const g = parseInt(hex.slice(3,5), 16);
+  const b = parseInt(hex.slice(5,7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function applyVariantColor(v) {
+  const c = VARIANTS[v].color;
+  document.documentElement.style.setProperty('--color-accent', c);
+  document.documentElement.style.setProperty('--color-accent-glow', hexToRgba(c, 0.25));
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DISPLAY FRAME
+   ═══════════════════════════════════════════════════════════ */
+function displayFrame(variantIndex, frameIndex) {
+  const fi = Math.max(0, Math.min(TOTAL_FRAMES - 1, frameIndex));
+  const img = frameCache[variantIndex][fi];
+  if (img) {
+    canvas.src = img.src;
+  }
+  currentFrame = fi;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCROLL HANDLER
+   ═══════════════════════════════════════════════════════════ */
+function onScroll() {
+  if (switching) return;
+  const scrollTop = window.scrollY || document.documentElement.scrollTop;
+  const maxScroll = document.getElementById('scroll-container').offsetHeight - window.innerHeight;
+  scrollProgress = Math.max(0, Math.min(1, scrollTop / maxScroll));
+  targetFrame = Math.round(scrollProgress * (TOTAL_FRAMES - 1));
+
+  // Update scroll indicator
+  scrollFill.style.width = (scrollProgress * 100) + '%';
+  const frameNum = String(Math.round(scrollProgress * (TOTAL_FRAMES - 1)) + 1).padStart(3, '0');
+  scrollFrameCount.textContent = `${frameNum} / ${TOTAL_FRAMES}`;
+
+  // Fade scroll indicator at 80%+
+  if (scrollProgress > 0.8) {
+    scrollIndicator.classList.add('faded');
+  } else {
+    scrollIndicator.classList.remove('faded');
+  }
+}
+
+window.addEventListener('scroll', onScroll, { passive: true });
+
+/* ═══════════════════════════════════════════════════════════
+   ANIMATION LOOP (rAF interpolation)
+   ═══════════════════════════════════════════════════════════ */
+function animLoop() {
+  if (!switching) {
+    if (currentFrame !== targetFrame) {
+      // Lerp toward target
+      const diff = targetFrame - currentFrame;
+      const step = diff > 0 ? Math.max(1, Math.ceil(diff * 0.3)) : Math.min(-1, Math.floor(diff * 0.3));
+      displayFrame(currentVariant, currentFrame + step);
+    }
+  }
+  requestAnimationFrame(animLoop);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   VARIANT SWITCHING
+   ═══════════════════════════════════════════════════════════ */
+function switchVariant(newIndex) {
+  if (newIndex === currentVariant || switching) return;
+  if (switchDebounce) return;
+
+  switching = true;
+  switchDebounce = setTimeout(() => { switchDebounce = null; }, 800);
+
+  const old = currentVariant;
+  currentVariant = newIndex;
+
+  // 1. Accent color transition
+  applyVariantColor(newIndex);
+
+  // 2. Text animations - slide out
+  flavorName.style.transition = 'transform 300ms cubic-bezier(0.22,1,0.36,1), opacity 300ms cubic-bezier(0.22,1,0.36,1)';
+  flavorName.style.transform = 'translateY(-30px)';
+  flavorName.style.opacity = '0';
+
+  flavorSubtitle.style.transition = 'opacity 200ms ease';
+  flavorSubtitle.style.opacity = '0';
+
+  flavorDesc.style.transition = 'opacity 200ms ease';
+  flavorDesc.style.opacity = '0';
+
+  ghostNumber.style.transition = 'transform 300ms cubic-bezier(0.22,1,0.36,1), opacity 300ms cubic-bezier(0.22,1,0.36,1)';
+  ghostNumber.style.transform = 'translateY(-30px)';
+  ghostNumber.style.opacity = '0';
+
+  // 3. Cross-fade to frame 0 of new variant
+  setTimeout(() => {
+    displayFrame(newIndex, 0);
+    targetFrame = 0;
+    currentFrame = 0;
+
+    // Reset scroll
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    scrollProgress = 0;
+    scrollFill.style.width = '0%';
+    scrollFrameCount.textContent = `001 / ${TOTAL_FRAMES}`;
+    scrollIndicator.classList.remove('faded');
+  }, 200);
+
+  // 4. Slide in new text
+  setTimeout(() => {
+    flavorName.textContent = VARIANTS[newIndex].name;
+    flavorName.style.transform = 'translateY(30px)';
+    flavorName.style.opacity = '0';
+    requestAnimationFrame(() => {
+      flavorName.style.transition = 'transform 400ms cubic-bezier(0.22,1,0.36,1), opacity 400ms cubic-bezier(0.22,1,0.36,1)';
+      flavorName.style.transform = 'translateY(0)';
+      flavorName.style.opacity = '1';
+    });
+
+    ghostNumber.textContent = String(newIndex + 1).padStart(2, '0');
+    ghostNumber.style.transform = 'translateY(30px)';
+    ghostNumber.style.opacity = '0';
+    requestAnimationFrame(() => {
+      ghostNumber.style.transition = 'transform 400ms cubic-bezier(0.22,1,0.36,1), opacity 400ms cubic-bezier(0.22,1,0.36,1)';
+      ghostNumber.style.transform = 'translateY(0)';
+      ghostNumber.style.opacity = '1';
+    });
+  }, 350);
+
+  // 5. Subtitle & description fade in
+  setTimeout(() => {
+    flavorSubtitle.textContent = VARIANTS[newIndex].subtitle;
+    flavorSubtitle.style.transition = 'opacity 300ms ease';
+    flavorSubtitle.style.opacity = '1';
+
+    flavorDesc.textContent = VARIANTS[newIndex].description;
+    flavorDesc.style.transition = 'opacity 300ms ease';
+    flavorDesc.style.opacity = '1';
+  }, 500);
+
+  // 6. Update dots
+  navDots.forEach((d, i) => {
+    d.classList.toggle('active', i === newIndex);
+  });
+
+  // 7. Done
+  setTimeout(() => {
+    switching = false;
+  }, 800);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   NAVIGATION EVENTS
+   ═══════════════════════════════════════════════════════════ */
+document.getElementById('btn-prev').addEventListener('click', () => {
+  switchVariant((currentVariant - 1 + VARIANTS.length) % VARIANTS.length);
+});
+document.getElementById('btn-next').addEventListener('click', () => {
+  switchVariant((currentVariant + 1) % VARIANTS.length);
+});
+navDots.forEach(dot => {
+  dot.addEventListener('click', () => {
+    switchVariant(parseInt(dot.dataset.index));
+  });
+});
+
+/* ═══════════════════════════════════════════════════════════
+   DARK / LIGHT MODE
+   ═══════════════════════════════════════════════════════════ */
+document.getElementById('mode-toggle').addEventListener('click', () => {
+  document.documentElement.classList.toggle('light');
+});
+
+/* ═══════════════════════════════════════════════════════════
+   CUSTOM CURSOR
+   ═══════════════════════════════════════════════════════════ */
+let cursorX = 0, cursorY = 0;
+let cursorRealX = 0, cursorRealY = 0;
+
+document.addEventListener('mousemove', (e) => {
+  cursorRealX = e.clientX;
+  cursorRealY = e.clientY;
+});
+
+function cursorLoop() {
+  cursorX += (cursorRealX - cursorX) * 0.15;
+  cursorY += (cursorRealY - cursorY) * 0.15;
+  cursor.style.left = cursorX + 'px';
+  cursor.style.top = cursorY + 'px';
+  requestAnimationFrame(cursorLoop);
+}
+cursorLoop();
+
+// Hover detection
+const interactiveSelectors = 'button, a, .mode-toggle, .nav-dot, .btn-cart, .btn-learn, .nav-btn';
+document.addEventListener('mouseover', (e) => {
+  if (e.target.closest(interactiveSelectors)) {
+    cursor.classList.add('hover');
+  }
+});
+document.addEventListener('mouseout', (e) => {
+  if (e.target.closest(interactiveSelectors)) {
+    cursor.classList.remove('hover');
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════
+   PAGE LOAD SEQUENCE
+   ═══════════════════════════════════════════════════════════ */
+async function init() {
+  applyVariantColor(0);
+  await loadVariantFrames(0);
+  displayFrame(0, 0);
+
+  // Hide loader
+  loaderEl.classList.add('hidden');
+  setTimeout(() => { loaderEl.style.display = 'none'; }, 600);
+
+  // Staggered intro animations
+  const introTimeline = [
+    { el: '.nav-logo', delay: 200 },
+    { el: '#logo-line', delay: 400, action: (el) => { el.style.width = '48px'; } },
+    { el: '.flavor-index', delay: 200 },
+    { el: '#flavor-name', delay: 400 },
+    { el: '#flavor-subtitle', delay: 600 },
+    { el: '.flavor-separator', delay: 600 },
+    { el: '#flavor-desc', delay: 600 },
+    { el: '.cta-buttons', delay: 600 },
+    { el: '#right-nav', delay: 800 },
+    { el: '#social-icons', delay: 1000 },
+    { el: '#scroll-indicator', delay: 1000 },
+  ];
+
+  introTimeline.forEach(({ el, delay, action }) => {
+    setTimeout(() => {
+      const elem = document.querySelector(el);
+      if (elem) {
+        elem.classList.add('intro-reveal');
+        if (action) action(elem);
+      }
+    }, delay);
+  });
+
+  // Start animation loop
+  requestAnimationFrame(animLoop);
+
+  // Load remaining variants in background
+  setTimeout(loadRemainingVariants, 500);
+}
+
+init();
+</script>
+</body>
+</html>
