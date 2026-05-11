@@ -54,8 +54,9 @@
 /* ─── RESET + ROOT ───────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
-body{font-family:"DM Sans",system-ui,sans-serif;font-weight:300;color:var(--color-text-primary);background:var(--color-void);overscroll-behavior:none;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;cursor:none}
-a,button{font:inherit;color:inherit;cursor:none}
+body{font-family:"DM Sans",system-ui,sans-serif;font-weight:300;color:var(--color-text-primary);background:var(--color-void);overscroll-behavior:none;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a,button{font:inherit;color:inherit}
+button,a,.is-interactive,summary,.faq-q{cursor:pointer}
 button{border:none;background:none}
 img{display:block;max-width:100%}
 ::selection{background:var(--color-accent);color:#000}
@@ -196,9 +197,7 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
 .loader-pct{font-size:.6rem;letter-spacing:.4em;color:var(--color-text-secondary);font-variant-numeric:tabular-nums}
 
 /* ─── CUSTOM CURSOR ──────────────────────────────────── */
-#cursor{position:fixed;top:0;left:0;width:12px;height:12px;border-radius:50%;border:1px solid var(--color-accent);background:transparent;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width 200ms var(--ease-luxe),height 200ms var(--ease-luxe),background-color 200ms var(--ease-luxe),border-color 600ms var(--ease-luxe);mix-blend-mode:difference;will-change:transform}
-#cursor.is-hover{width:40px;height:40px;background:var(--color-accent-glow);border-color:var(--color-accent);mix-blend-mode:normal}
-@media (hover:none),(pointer:coarse){#cursor{display:none}body,a,button{cursor:auto}}
+#cursor{display:none!important}
 
 /* ─── RESPONSIVE ─────────────────────────────────────── */
 @media (max-width:900px){
@@ -244,7 +243,10 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
 .cart-backdrop.is-open,.modal-backdrop.is-open{opacity:1;pointer-events:auto}
 [data-theme="light"] .cart-backdrop,[data-theme="light"] .modal-backdrop{background:rgba(10,10,10,0.35)}
 
-.cart-drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,92vw);z-index:90;background:rgba(10,10,10,0.72);backdrop-filter:blur(28px) saturate(160%);-webkit-backdrop-filter:blur(28px) saturate(160%);border-left:1px solid var(--color-border);box-shadow:-40px 0 80px rgba(0,0,0,0.6);display:flex;flex-direction:column;transform:translateX(100%);transition:transform 540ms cubic-bezier(.22,1.18,.36,1),background 500ms var(--ease-luxe),border-color 500ms var(--ease-luxe);will-change:transform;color:var(--color-text-primary)}
+/* Drawer is offscreen by default. backdrop-filter is heavy in Chrome and we
+   don't want it composited when the drawer is hidden — apply only when open. */
+.cart-drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,92vw);z-index:90;background:rgba(10,10,10,0.92);border-left:1px solid var(--color-border);box-shadow:-40px 0 80px rgba(0,0,0,0.6);display:flex;flex-direction:column;transform:translateX(100%);transition:transform 540ms cubic-bezier(.22,1.18,.36,1),background 500ms var(--ease-luxe),border-color 500ms var(--ease-luxe);color:var(--color-text-primary)}
+.cart-drawer.is-open{background:rgba(10,10,10,0.72);backdrop-filter:blur(28px) saturate(160%);-webkit-backdrop-filter:blur(28px) saturate(160%);will-change:transform}
 [data-theme="light"] .cart-drawer{background:rgba(240,237,232,0.88)}
 .cart-drawer.is-open{transform:translateX(0)}
 
@@ -1102,6 +1104,30 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
     return y / max;
   }
 
+  let _scrollPending = false;
+  function _scrollFlush() {
+    _scrollPending = false;
+    updateNavOnScroll(); // updates is-past-hero/nav-hidden BEFORE we decide to tick the canvas
+    if (loopMode) return;
+    // When user is below the hero, the fixed canvas is faded to 0 — skip the
+    // expensive lerp/drawImage entirely. The frame counter UI is still updated
+    // so that scrolling back up jumps to the right frame instantly.
+    scrollProgress = computeScrollProgress();
+    targetFrame = Math.round(scrollProgress * (FRAME_COUNT - 1));
+    updateScrollUI();
+    if (document.body.classList.contains("is-past-hero")) {
+      // Snap displayed frame to target so re-entry is instant
+      displayedFrame = targetFrame;
+      currentFrame = targetFrame;
+      return;
+    }
+    scheduleTick();
+  }
+  function onScrollRaf() {
+    if (_scrollPending) return;
+    _scrollPending = true;
+    requestAnimationFrame(_scrollFlush);
+  }
   function onScroll() {
     if (loopMode) return; // loop overrides scroll-driven control
     scrollProgress = computeScrollProgress();
@@ -1315,41 +1341,6 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
   }
   elThemeToggle.addEventListener("click", () => {
     setTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light");
-  });
-
-  /* ─── CUSTOM CURSOR (idle-suspended lerp) ──────────── */
-  const cursor = document.getElementById("cursor");
-  let mx = window.innerWidth / 2, my = window.innerHeight / 2;
-  let cx = mx, cy = my;
-  let cursorActive = false;
-
-  function cursorTick() {
-    cx += (mx - cx) / 6;
-    cy += (my - cy) / 6;
-    cursor.style.transform = "translate(" + cx + "px," + cy + "px) translate(-50%,-50%)";
-    if (Math.abs(mx - cx) > 0.1 || Math.abs(my - cy) > 0.1) {
-      requestAnimationFrame(cursorTick);
-    } else {
-      cursorActive = false;
-    }
-  }
-  function startCursor() {
-    if (cursorActive) return;
-    cursorActive = true;
-    requestAnimationFrame(cursorTick);
-  }
-
-  document.addEventListener("mousemove", (e) => {
-    mx = e.clientX;
-    my = e.clientY;
-    startCursor();
-  }, { passive: true });
-
-  document.addEventListener("mouseover", (e) => {
-    if (e.target.closest && e.target.closest(".is-interactive,a,button")) cursor.classList.add("is-hover");
-  });
-  document.addEventListener("mouseout", (e) => {
-    if (e.target.closest && e.target.closest(".is-interactive,a,button")) cursor.classList.remove("is-hover");
   });
 
   /* ─── CART STATE + LOCALSTORAGE ───────────────────── */
@@ -1776,7 +1767,7 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
     else                                       document.body.classList.remove("is-past-hero");
     lastNavY = y;
   }
-  window.addEventListener("scroll", updateNavOnScroll, { passive: true });
+  /* combined scroll handler is registered below */
 
   /* ─── CHECKOUT FLOW ─────────────────────────────────── */
   const elCheckoutModal   = document.getElementById("checkout-modal");
@@ -1956,7 +1947,9 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
     resizeQueued = true;
     requestAnimationFrame(() => { resizeQueued = false; resizeCanvas(); });
   }
-  window.addEventListener("scroll", onScroll, { passive: true });
+  // Single rAF-throttled scroll listener that drives both the canvas frame
+  // and the sticky-nav / past-hero classes. Avoids double-handling.
+  window.addEventListener("scroll", onScrollRaf, { passive: true });
   window.addEventListener("resize", queueResize, { passive: true });
   window.addEventListener("orientationchange", queueResize, { passive: true });
 
