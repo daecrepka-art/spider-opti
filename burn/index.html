@@ -196,9 +196,6 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
 .loader-bar-fill{position:absolute;inset:0;width:0%;background:var(--color-accent);transition:width 200ms linear}
 .loader-pct{font-size:.6rem;letter-spacing:.4em;color:var(--color-text-secondary);font-variant-numeric:tabular-nums}
 
-/* ─── CUSTOM CURSOR ──────────────────────────────────── */
-#cursor{display:none!important}
-
 /* ─── RESPONSIVE ─────────────────────────────────────── */
 @media (max-width:900px){
   .top-nav{padding:0 4vw}
@@ -208,11 +205,12 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
   .flavor-description{max-width:100%}
 }
 @media (max-width:640px){
-  /* Mobile graceful degradation: static hero, no scroll-driven animation */
-  #scroll-spacer{display:none}
-  body.is-mobile{overflow:hidden;height:100svh}
+  /* Mobile graceful degradation: static hero (height = 1 viewport), and
+     the rest of the page (sections, cart, checkout) scrolls normally below it. */
+  #scroll-spacer{height:100svh}
+  #stage{position:absolute;top:0;left:0;right:0;height:100svh}
   .right-block{display:none}
-  .left-block{top:auto;bottom:14vh;left:5vw;width:min(85vw,360px);transform:none;opacity:1}
+  .left-block{position:absolute;top:auto;bottom:14vh;left:5vw;width:min(85vw,360px);transform:none;opacity:1}
   .loaded .left-block{transform:none}
   .scroll-indicator{display:none}
   .nav-right .nav-divider,.nav-right .nav-label{display:none}
@@ -222,6 +220,8 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
   .bottom-cluster{bottom:24px}
   .cta-row{margin-top:20px}
   .btn{height:44px;padding:0 22px;font-size:.9rem}
+  .cart-drawer{width:100vw}
+  .checkout-card{padding:24px}
 }
 
 @media (prefers-reduced-motion:reduce){
@@ -239,8 +239,10 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
 @keyframes badge-bump{0%{transform:scale(1)}30%{transform:scale(1.45)}60%{transform:scale(.92)}100%{transform:scale(1)}}
 
 /* ─── CART DRAWER ────────────────────────────────────── */
-.cart-backdrop,.modal-backdrop{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,0.55);backdrop-filter:blur(8px) saturate(120%);-webkit-backdrop-filter:blur(8px) saturate(120%);opacity:0;pointer-events:none;transition:opacity 380ms var(--ease-luxe)}
-.cart-backdrop.is-open,.modal-backdrop.is-open{opacity:1;pointer-events:auto}
+/* Backdrops are hidden by default. backdrop-filter is only applied when open
+   so the compositor doesn't keep blurring offscreen layers. */
+.cart-backdrop,.modal-backdrop{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,0.55);opacity:0;pointer-events:none;transition:opacity 380ms var(--ease-luxe)}
+.cart-backdrop.is-open,.modal-backdrop.is-open{opacity:1;pointer-events:auto;backdrop-filter:blur(8px) saturate(120%);-webkit-backdrop-filter:blur(8px) saturate(120%)}
 [data-theme="light"] .cart-backdrop,[data-theme="light"] .modal-backdrop{background:rgba(10,10,10,0.35)}
 
 /* Drawer is offscreen by default. backdrop-filter is heavy in Chrome and we
@@ -322,7 +324,8 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
 .toast.toast-info   {--toast-accent:var(--color-accent);--toast-accent-soft:var(--color-accent-soft)}
 
 /* ─── LEARN-MORE MODAL ───────────────────────────────── */
-.learn-modal{position:fixed;left:50%;top:50%;transform:translate(-50%,calc(-50% + 24px));z-index:90;width:min(540px,92vw);max-height:84vh;overflow-y:auto;background:rgba(12,12,12,0.78);backdrop-filter:blur(30px) saturate(160%);-webkit-backdrop-filter:blur(30px) saturate(160%);border:1px solid var(--color-border);border-radius:18px;padding:36px 36px 30px;opacity:0;pointer-events:none;transition:transform 540ms cubic-bezier(.22,1.18,.36,1),opacity 380ms var(--ease-luxe),background 500ms var(--ease-luxe)}
+.learn-modal{position:fixed;left:50%;top:50%;transform:translate(-50%,calc(-50% + 24px));z-index:90;width:min(540px,92vw);max-height:84vh;overflow-y:auto;background:rgba(12,12,12,0.92);border:1px solid var(--color-border);border-radius:18px;padding:36px 36px 30px;opacity:0;pointer-events:none;transition:transform 540ms cubic-bezier(.22,1.18,.36,1),opacity 380ms var(--ease-luxe),background 500ms var(--ease-luxe)}
+.learn-modal.is-open{background:rgba(12,12,12,0.78);backdrop-filter:blur(30px) saturate(160%);-webkit-backdrop-filter:blur(30px) saturate(160%)}
 [data-theme="light"] .learn-modal{background:rgba(245,242,238,0.92)}
 .learn-modal.is-open{opacity:1;transform:translate(-50%,-50%);pointer-events:auto}
 .learn-close{position:absolute;top:14px;right:14px}
@@ -405,18 +408,23 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
 .ingredient-list li::before{content:"";position:absolute;left:0;top:.7em;width:6px;height:6px;border-radius:50%;background:var(--color-accent);transition:background 500ms var(--ease-luxe);transform:translateY(-50%)}
 
 /* ─── FAQ ────────────────────────────────────────────── */
+/* FAQ accordion. Animation uses the grid-template-rows 0fr→1fr trick which
+   lets us transition to the row's actual height with no fixed max-height. */
 .faq-list{margin-top:48px;display:flex;flex-direction:column;border-top:1px solid var(--color-border)}
 .faq-item{border-bottom:1px solid var(--color-border)}
-.faq-q{width:100%;padding:24px 0;display:flex;align-items:center;justify-content:space-between;gap:24px;text-align:left;color:var(--color-text-primary);font-size:1.05rem;letter-spacing:.02em;transition:color 250ms ease}
+.faq-q{width:100%;padding:24px 0;display:flex;align-items:center;justify-content:space-between;gap:24px;text-align:left;color:var(--color-text-primary);font-size:1.05rem;letter-spacing:.02em;transition:color 250ms ease;background:none;border:0;border-radius:6px;font-family:inherit;font-weight:inherit}
 .faq-q:hover{color:var(--color-accent)}
-.faq-q-icon{width:28px;height:28px;border-radius:50%;border:1px solid var(--color-border);display:inline-flex;align-items:center;justify-content:center;flex:none;transition:background 280ms var(--ease-luxe),border-color 280ms var(--ease-luxe),transform 380ms var(--ease-luxe);color:var(--color-text-secondary);position:relative}
-.faq-q-icon::before,.faq-q-icon::after{content:"";position:absolute;background:currentColor;border-radius:1px;transition:transform 320ms var(--ease-luxe),opacity 320ms var(--ease-luxe)}
+.faq-q:focus-visible{outline:2px solid var(--color-accent);outline-offset:6px}
+.faq-q-icon{width:28px;height:28px;border-radius:50%;border:1px solid var(--color-border);display:inline-flex;align-items:center;justify-content:center;flex:none;transition:background 280ms var(--ease-luxe),border-color 280ms var(--ease-luxe);color:var(--color-text-secondary);position:relative}
+.faq-q-icon::before,.faq-q-icon::after{content:"";position:absolute;background:currentColor;border-radius:1px;transition:transform 320ms var(--ease-luxe)}
 .faq-q-icon::before{width:11px;height:1.5px}
 .faq-q-icon::after{width:1.5px;height:11px}
 .faq-item.is-open .faq-q-icon{background:var(--color-accent);border-color:var(--color-accent);color:#000}
 .faq-item.is-open .faq-q-icon::after{transform:scaleY(0)}
-.faq-a{max-height:0;overflow:hidden;font-size:.92rem;line-height:1.7;color:var(--color-text-secondary);transition:max-height 480ms var(--ease-luxe),padding 480ms var(--ease-luxe)}
-.faq-item.is-open .faq-a{padding-bottom:28px;max-height:400px}
+.faq-a-wrap{display:grid;grid-template-rows:0fr;transition:grid-template-rows 460ms var(--ease-luxe)}
+.faq-a-wrap>div{min-height:0;overflow:hidden;opacity:0;font-size:.92rem;line-height:1.7;color:var(--color-text-secondary);transition:opacity 320ms ease,padding 460ms var(--ease-luxe);padding:0}
+.faq-item.is-open .faq-a-wrap{grid-template-rows:1fr}
+.faq-item.is-open .faq-a-wrap>div{opacity:1;padding:0 0 28px}
 
 /* ─── REVIEWS ────────────────────────────────────────── */
 .reviews-summary{display:flex;align-items:flex-end;gap:28px;flex-wrap:wrap;margin-top:32px;margin-bottom:36px}
@@ -464,7 +472,8 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
 .footer-bottom{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;padding-top:24px;border-top:1px solid var(--color-border);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase}
 
 /* ─── CHECKOUT MODAL ─────────────────────────────────── */
-.checkout-modal{position:fixed;inset:0;z-index:130;background:rgba(0,0,0,0.92);backdrop-filter:blur(16px) saturate(120%);-webkit-backdrop-filter:blur(16px) saturate(120%);display:flex;align-items:center;justify-content:center;padding:6vh 5vw;opacity:0;pointer-events:none;transition:opacity 460ms var(--ease-luxe);overflow-y:auto}
+.checkout-modal{position:fixed;inset:0;z-index:130;background:rgba(0,0,0,0.96);display:flex;align-items:center;justify-content:center;padding:6vh 5vw;opacity:0;pointer-events:none;transition:opacity 460ms var(--ease-luxe);overflow-y:auto}
+.checkout-modal.is-open{background:rgba(0,0,0,0.92);backdrop-filter:blur(16px) saturate(120%);-webkit-backdrop-filter:blur(16px) saturate(120%)}
 [data-theme="light"] .checkout-modal{background:rgba(240,237,232,0.94)}
 .checkout-modal.is-open{opacity:1;pointer-events:auto}
 .checkout-card{position:relative;width:min(720px,100%);background:rgba(14,14,14,0.78);border:1px solid var(--color-border);border-radius:18px;padding:48px 48px 40px;display:flex;flex-direction:column;gap:24px;transform:translateY(20px);transition:transform 540ms cubic-bezier(.22,1.18,.36,1)}
@@ -690,20 +699,18 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
   </div>
 </div>
 
-<!-- HINT TOAST: shown ~15s on boot to teach the autoplay + scroll controls -->
+<!-- HINT TOAST: shown ~15s on boot to teach the scroll + key controls -->
 <div id="hint-toast" class="hint-toast" role="status" aria-live="polite">
-  <span>Press</span>
-  <kbd class="kbd">L</kbd>
-  <span>to pause autoplay</span>
+  <span>Scroll or boost with wheel</span>
   <span class="hint-sep">·</span>
-  <span>Scroll</span>
+  <kbd class="kbd">L</kbd>
+  <span>demo all flavors</span>
   <span class="hint-sep">·</span>
   <kbd class="kbd">←</kbd><kbd class="kbd">→</kbd>
   <span>switch flavor</span>
 </div>
 
-<!-- CUSTOM CURSOR -->
-<div id="cursor" aria-hidden="true"></div>
+
 
 <!-- SCROLL SPACER -->
 <div id="scroll-spacer"></div>
@@ -758,27 +765,27 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
     <div class="section-eyebrow reveal">FAQ</div>
     <h2 class="section-title reveal" data-delay="1">Частые&nbsp;вопросы</h2>
     <p class="section-lead reveal" data-delay="2">Самое важное о BURN — за 30 секунд.</p>
-    <div class="faq-list reveal" data-delay="3" id="faq-list">
-      <details class="faq-item">
-        <summary class="faq-q"><span>Сколько кофеина в одной банке?</span><span class="faq-q-icon" aria-hidden="true"></span></summary>
-        <div class="faq-a">В банке 250&nbsp;мл — 80&nbsp;мг чистого кофеина. Это примерно одна классическая чашка эспрессо, но с контролируемым высвобождением: пик — через 25 минут, плавный спуск — без «дребезга» и резкого падения.</div>
-      </details>
-      <details class="faq-item">
-        <summary class="faq-q"><span>Можно пить каждый день?</span><span class="faq-q-icon" aria-hidden="true"></span></summary>
-        <div class="faq-a">Да, при соблюдении суточной нормы кофеина (до 400&nbsp;мг для взрослого). 2-3 банки в день — комфортный режим. Не рекомендуется на ночь и натощак.</div>
-      </details>
-      <details class="faq-item">
-        <summary class="faq-q"><span>Чем отличаются вкусы?</span><span class="faq-q-icon" aria-hidden="true"></span></summary>
-        <div class="faq-a">Функциональная база одинакова — кофеин, таурин, витамины B. Различаются только вкусоароматический профиль и оттенок банки. ORIGINAL — нейтральный, DARK ENERGY — кофе/карамель, TROPICAL MIX — ягоды и тропик, FRUIT PUNCH — цитрус-микс.</div>
-      </details>
-      <details class="faq-item">
-        <summary class="faq-q"><span>Есть ли сахар?</span><span class="faq-q-icon" aria-hidden="true"></span></summary>
-        <div class="faq-a">Ноль грамм. Подслащиваем стевиолгликозидами и сукралозой — без всплеска инсулина и без сахарной просадки через час.</div>
-      </details>
-      <details class="faq-item">
-        <summary class="faq-q"><span>Как быстро доставляете?</span><span class="faq-q-icon" aria-hidden="true"></span></summary>
-        <div class="faq-a">Москва и Санкт-Петербург — день в день при заказе до 14:00. Регионы — 1-3 рабочих дня СДЭК или Boxberry. Бесплатно при заказе от 999&nbsp;₽.</div>
-      </details>
+    <div class="faq-list reveal" data-delay="3" id="faq-list" role="list">
+      <div class="faq-item" role="listitem">
+        <button class="faq-q" type="button" aria-expanded="false" aria-controls="faq-a-1" id="faq-q-1"><span>Сколько кофеина в одной банке?</span><span class="faq-q-icon" aria-hidden="true"></span></button>
+        <div class="faq-a-wrap" id="faq-a-1" role="region" aria-labelledby="faq-q-1"><div>В банке 250&nbsp;мл — 80&nbsp;мг чистого кофеина. Это примерно одна классическая чашка эспрессо, но с контролируемым высвобождением: пик — через 25 минут, плавный спуск — без «дребезга» и резкого падения.</div></div>
+      </div>
+      <div class="faq-item" role="listitem">
+        <button class="faq-q" type="button" aria-expanded="false" aria-controls="faq-a-2" id="faq-q-2"><span>Можно пить каждый день?</span><span class="faq-q-icon" aria-hidden="true"></span></button>
+        <div class="faq-a-wrap" id="faq-a-2" role="region" aria-labelledby="faq-q-2"><div>Да, при соблюдении суточной нормы кофеина (до 400&nbsp;мг для взрослого). 2-3 банки в день — комфортный режим. Не рекомендуется на ночь и натощак.</div></div>
+      </div>
+      <div class="faq-item" role="listitem">
+        <button class="faq-q" type="button" aria-expanded="false" aria-controls="faq-a-3" id="faq-q-3"><span>Чем отличаются вкусы?</span><span class="faq-q-icon" aria-hidden="true"></span></button>
+        <div class="faq-a-wrap" id="faq-a-3" role="region" aria-labelledby="faq-q-3"><div>Функциональная база одинакова — кофеин, таурин, витамины B. Различаются только вкусоароматический профиль и оттенок банки. ORIGINAL — нейтральный, DARK ENERGY — кофе/карамель, TROPICAL MIX — ягоды и тропик, FRUIT PUNCH — цитрус-микс.</div></div>
+      </div>
+      <div class="faq-item" role="listitem">
+        <button class="faq-q" type="button" aria-expanded="false" aria-controls="faq-a-4" id="faq-q-4"><span>Есть ли сахар?</span><span class="faq-q-icon" aria-hidden="true"></span></button>
+        <div class="faq-a-wrap" id="faq-a-4" role="region" aria-labelledby="faq-q-4"><div>Ноль грамм. Подслащиваем стевиолгликозидами и сукралозой — без всплеска инсулина и без сахарной просадки через час.</div></div>
+      </div>
+      <div class="faq-item" role="listitem">
+        <button class="faq-q" type="button" aria-expanded="false" aria-controls="faq-a-5" id="faq-q-5"><span>Как быстро доставляете?</span><span class="faq-q-icon" aria-hidden="true"></span></button>
+        <div class="faq-a-wrap" id="faq-a-5" role="region" aria-labelledby="faq-q-5"><div>Москва и Санкт-Петербург — день в день при заказе до 14:00. Регионы — 1-3 рабочих дня СДЭК или Boxberry. Бесплатно при заказе от 999&nbsp;₽.</div></div>
+      </div>
     </div>
   </section>
 
@@ -1176,6 +1183,7 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
       // Snap to current scroll position so the loop continues from where the user was
       loopFrame = targetFrame || 0;
       loopLastTs = 0;
+      hybridBoost = 0; // entering loop suspends hybrid base; drain any residual boost
       document.body.classList.add("is-looping");
       loopRaf = requestAnimationFrame(loopStep);
     } else {
@@ -1589,22 +1597,21 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
     return `<svg viewBox="0 0 24 24"><path d="M12 8 L12 13 M12 16 L12 16.5"/></svg>`;
   }
 
-  /* ─── RIPPLE EFFECT on .btn ────────────────────────── */
-  function attachRipple(btn) {
-    btn.addEventListener("click", (e) => {
-      if (btn.classList.contains("is-loading") || btn.disabled) return;
-      const r = document.createElement("span");
-      r.className = "ripple";
-      const rect = btn.getBoundingClientRect();
-      const size = Math.max(rect.width, rect.height);
-      r.style.width = r.style.height = size + "px";
-      r.style.left = (e.clientX - rect.left - size / 2) + "px";
-      r.style.top  = (e.clientY - rect.top  - size / 2) + "px";
-      btn.appendChild(r);
-      setTimeout(() => r.remove(), 640);
-    });
-  }
-  document.querySelectorAll(".btn").forEach(attachRipple);
+  /* ─── RIPPLE EFFECT on .btn (single delegated listener) ───── */
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest && e.target.closest(".btn");
+    if (!btn) return;
+    if (btn.classList.contains("is-loading") || btn.disabled) return;
+    const rect = btn.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    const r = document.createElement("span");
+    r.className = "ripple";
+    r.style.width = r.style.height = size + "px";
+    r.style.left = (e.clientX - rect.left - size / 2) + "px";
+    r.style.top  = (e.clientY - rect.top  - size / 2) + "px";
+    btn.appendChild(r);
+    setTimeout(() => r.remove(), 640);
+  });
 
   /* ─── ADD TO CART BUTTON ────────────────────────────── */
   const elAddBtn   = document.getElementById("add-to-cart");
@@ -1651,11 +1658,13 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
     elLearnModal.classList.add("is-open");
     elLearnBackdrop.classList.add("is-open");
     elLearnModal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("learn-open");
   }
   function closeLearn() {
     elLearnModal.classList.remove("is-open");
     elLearnBackdrop.classList.remove("is-open");
     elLearnModal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("learn-open");
   }
   document.getElementById("learn-more").addEventListener("click", openLearn);
   document.getElementById("learn-close").addEventListener("click", closeLearn);
@@ -1719,15 +1728,27 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
   }
 
   /* ─── FAQ ACCORDION ─────────────────────────────────── */
-  document.getElementById("faq-list")?.addEventListener("click", (e) => {
-    const summary = e.target.closest(".faq-q");
-    if (!summary) return;
-    e.preventDefault();
-    const item = summary.parentElement;
-    const wasOpen = item.classList.contains("is-open");
-    document.querySelectorAll(".faq-item.is-open").forEach((el) => el.classList.remove("is-open"));
-    if (!wasOpen) item.classList.add("is-open");
-  });
+  // Only one item open at a time. aria-expanded is kept in sync. Event delegation
+  // means we attach a single listener for any number of items.
+  const elFaqList = document.getElementById("faq-list");
+  if (elFaqList) {
+    const setOpen = (item, open) => {
+      item.classList.toggle("is-open", open);
+      const btn = item.querySelector(".faq-q");
+      if (btn) btn.setAttribute("aria-expanded", open ? "true" : "false");
+    };
+    elFaqList.addEventListener("click", (e) => {
+      const btn = e.target.closest(".faq-q");
+      if (!btn) return;
+      const item = btn.parentElement;
+      const wasOpen = item.classList.contains("is-open");
+      // Close any other open item, then toggle the clicked one
+      elFaqList.querySelectorAll(".faq-item.is-open").forEach((el) => {
+        if (el !== item) setOpen(el, false);
+      });
+      setOpen(item, !wasOpen);
+    });
+  }
 
   /* ─── SCROLL REVEAL via IntersectionObserver ───────── */
   function initRevealObserver() {
@@ -1907,14 +1928,6 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
     setTimeout(() => { elCheckoutConfetti.innerHTML = ""; }, 3000);
   }
 
-  /* ─── GLOBAL ESC HANDLER ────────────────────────────── */
-  document.addEventListener("keydown", (e) => {
-    if (e.key !== "Escape") return;
-    if (elCheckoutModal.classList.contains("is-open")) { closeCheckout(); return; }
-    if (elLearnModal.classList.contains("is-open"))    { closeLearn();    return; }
-    if (elCartDrawer.classList.contains("is-open"))    { closeCart();     return; }
-  });
-
   /* ─── EVENT BINDINGS ───────────────────────────────── */
   document.getElementById("prev-variant").addEventListener("click", () => {
     switchToVariant((currentVariant - 1 + VARIANTS.length) % VARIANTS.length);
@@ -1925,16 +1938,27 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
   dotEls.forEach((dot) => {
     dot.addEventListener("click", () => switchToVariant(parseInt(dot.dataset.variant, 10)));
   });
+
+  // Single global keydown — handles ESC for modals, arrows for variants, L for loop.
+  // Use e.code for physical-key matching so non-Latin layouts (e.g. Cyrillic
+  // "д" on the L key) work consistently.
   document.addEventListener("keydown", (e) => {
-    // Use e.code for physical-key matching so non-Latin layouts (e.g. Cyrillic
-    // "д" on the L key, "ц"/"я" on arrows aren't an issue but L was) still work.
+    if (e.key === "Escape") {
+      if (elCheckoutModal.classList.contains("is-open")) { closeCheckout(); return; }
+      if (elLearnModal.classList.contains("is-open"))    { closeLearn();    return; }
+      if (elCartDrawer.classList.contains("is-open"))    { closeCart();     return; }
+      return;
+    }
+    // Ignore navigation keys while typing in an input/textarea
+    const t = e.target;
+    if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
     if (e.code === "ArrowRight" || e.code === "ArrowDown") {
       e.preventDefault();
       switchToVariant((currentVariant + 1) % VARIANTS.length);
     } else if (e.code === "ArrowLeft" || e.code === "ArrowUp") {
       e.preventDefault();
       switchToVariant((currentVariant - 1 + VARIANTS.length) % VARIANTS.length);
-    } else if (e.code === "KeyL" || e.key === "l" || e.key === "L" || e.key === "\u0434" || e.key === "\u0414") {
+    } else if (e.code === "KeyL") {
       e.preventDefault();
       toggleLoop();
     }
@@ -1952,6 +1976,95 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
   window.addEventListener("scroll", onScrollRaf, { passive: true });
   window.addEventListener("resize", queueResize, { passive: true });
   window.addEventListener("orientationchange", queueResize, { passive: true });
+
+  /* ─── HYBRID SCROLL ENGINE ─────────────────────────────
+   * Gentle "cinematic" auto-advance through the hero region + wheel boost.
+   *
+   * - Base speed: a small constant px/sec while inside the hero spacer.
+   *   Outside the hero (past-hero) there's no auto-advance.
+   * - Wheel events ADD to a decaying `boost` velocity (passive listener — the
+   *   page also still scrolls natively, so wheel feels amplified rather than
+   *   intercepted).
+   * - Friction shrinks the boost back toward zero each frame.
+   * - Reduced motion: base auto-advance disabled, boost still works.
+   * - Mobile (isMobile): engine disabled (native touch is already great).
+   * - Frame-loop demo (L key) suspends the engine; exiting the loop resumes it.
+   * - User interactions that programmatically scroll (anchor jump, focus()) set
+   *   a short pause so they don't fight the engine.
+   */
+  // prefersReducedMotion + isMobile are already defined at the top of the IIFE
+  const HYBRID_BASE          = 55;     // px/sec gentle auto-advance in hero
+  const HYBRID_WHEEL_GAIN    = 0.55;   // boost added per pixel of wheel delta
+  const HYBRID_FRICTION      = 4.2;    // higher = faster decay (per second)
+  const HYBRID_MAX_SPEED     = 2400;   // px/sec cap
+  let hybridBoost  = 0;
+  let hybridLastTs = 0;
+  let hybridRaf    = 0;
+  let hybridPauseUntil = 0;
+
+  function hybridTick(ts) {
+    if (!hybridLastTs) hybridLastTs = ts;
+    const dt = Math.min(0.05, (ts - hybridLastTs) / 1000); // clamp dt to avoid huge jumps
+    hybridLastTs = ts;
+
+    const pastHero  = document.body.classList.contains("is-past-hero");
+    const modalOpen = document.body.classList.contains("cart-open")
+                   || document.body.classList.contains("learn-open")
+                   || document.body.classList.contains("checkout-open");
+    const paused    = ts < hybridPauseUntil || modalOpen;
+    const baseOn    = !loopMode && !pastHero && !prefersReducedMotion && !paused;
+    const base      = baseOn ? HYBRID_BASE : 0;
+    if (modalOpen) hybridBoost = 0; // freeze the page while modals are open
+
+    let speed = base + hybridBoost;
+    if (speed >  HYBRID_MAX_SPEED) speed =  HYBRID_MAX_SPEED;
+    if (speed < -HYBRID_MAX_SPEED) speed = -HYBRID_MAX_SPEED;
+
+    if (Math.abs(speed) > 0.5) {
+      const before = window.scrollY;
+      window.scrollBy(0, speed * dt);
+      // If the page didn't actually move (we hit a scroll boundary) drain
+      // the boost so we don't keep "pressing" against the edge.
+      if (Math.abs(window.scrollY - before) < 0.1) hybridBoost = 0;
+    }
+
+    // Exponential friction decay — frame-rate independent
+    hybridBoost *= Math.exp(-HYBRID_FRICTION * dt);
+    if (Math.abs(hybridBoost) < 0.5) hybridBoost = 0;
+
+    hybridRaf = requestAnimationFrame(hybridTick);
+  }
+
+  function startHybridScroll() {
+    if (isMobile) return;          // touch handles itself
+    if (hybridRaf) return;
+    hybridLastTs = 0;
+    hybridRaf = requestAnimationFrame(hybridTick);
+  }
+  function stopHybridScroll() {
+    if (!hybridRaf) return;
+    cancelAnimationFrame(hybridRaf);
+    hybridRaf = 0;
+  }
+  function pauseHybridScroll(ms = 1500) {
+    hybridPauseUntil = performance.now() + ms;
+  }
+
+  // Wheel: in loop mode it exits the loop; otherwise it pushes the boost.
+  window.addEventListener("wheel", (e) => {
+    if (loopMode) { setLoopMode(false); return; }
+    if (isMobile) return;
+    hybridBoost += e.deltaY * HYBRID_WHEEL_GAIN;
+  }, { passive: true });
+  // Touch on hero exits the loop (same as before)
+  window.addEventListener("touchstart", () => {
+    if (loopMode) setLoopMode(false);
+  }, { passive: true });
+  // Programmatic scrolls (anchor jumps, focus()) pause the auto-advance briefly
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest && e.target.closest('a[href^="#"]');
+    if (a && a.getAttribute("href").length > 1) pauseHybridScroll(2000);
+  });
 
   /* ─── BOOT ─────────────────────────────────────────── */
   const elLoader     = document.getElementById("loader");
@@ -1973,11 +2086,7 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
     renderRelated();
     initRevealObserver();
     updateNavOnScroll();
-    // Re-bind ripple on dynamically rendered .btn elements (related cards aren't .btn but skip anyway)
-    document.querySelectorAll(".btn:not([data-ripple-bound])").forEach((b) => {
-      b.setAttribute("data-ripple-bound", "1");
-      attachRipple(b);
-    });
+    // Ripple is delegated globally — no per-element binding needed.
 
     // Phase 1: load SPARSE_KEYFRAMES keyframes evenly across full range.
     // drawCurrent's nearest-neighbour fallback gives a coarse animation
@@ -2000,32 +2109,26 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
     setTimeout(() => {
       elLoader.classList.add("hidden");
       document.body.classList.add("loaded");
-      // Autoplay by default on desktop. '?loop=0' opts out.
+      // Start the hybrid auto-scroll engine. L key still toggles the
+      // frame-loop demo (cycle all 4 flavors). `?loop=1` opts into frame-loop
+      // on boot; `?autoscroll=0` opts out of the gentle base advance.
       const params = new URLSearchParams(window.location.search);
-      const wantLoop = params.get("loop") === "0" ? false : !isMobile;
-      if (wantLoop) setLoopMode(true);
+      if (params.get("loop") === "1" && !isMobile) setLoopMode(true);
+      startHybridScroll();
       // Dismiss the controls hint after ~15s, or sooner on any meaningful input
       const hint = document.getElementById("hint-toast");
       if (hint) {
         const dismiss = () => {
           hint.classList.add("dismissed");
           window.removeEventListener("keydown", dismiss, true);
-          window.removeEventListener("wheel", dismiss, { passive: true });
-          window.removeEventListener("touchstart", dismiss, { passive: true });
+          window.removeEventListener("wheel", dismiss);
+          window.removeEventListener("touchstart", dismiss);
         };
         setTimeout(dismiss, 15000);
         window.addEventListener("keydown", dismiss, true);
         window.addEventListener("wheel", dismiss, { passive: true });
         window.addEventListener("touchstart", dismiss, { passive: true });
       }
-      // A real scroll gesture (wheel / touchpad / touch) drops out of the
-      // autoplay loop and hands control back to the user. Arrow keys + variant
-      // buttons keep the loop running (see switchToVariant).
-      const exitLoopOnScroll = () => {
-        if (loopMode) setLoopMode(false);
-      };
-      window.addEventListener("wheel", exitLoopOnScroll, { passive: true });
-      window.addEventListener("touchstart", exitLoopOnScroll, { passive: true });
     }, 200);
 
     if (isMobile) return;
