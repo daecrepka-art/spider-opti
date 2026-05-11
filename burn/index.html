@@ -4,8 +4,46 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <meta name="theme-color" content="#000000" />
-<title>BURN — Energy Drink</title>
-<meta name="description" content="BURN Energy Drink. Four flavors. Pure kinetic energy. A scroll-driven product experience." />
+<title>BURN — Energy Drink · Four Flavors. Pure Kinetic Energy.</title>
+<meta name="description" content="BURN Energy Drink. Four flavors — Original, Dark Energy, Tropical Mix, Fruit Punch. A scroll-driven product experience. Каждая банка — управляемая детонация." />
+<meta name="keywords" content="BURN, energy drink, BURN energy, original, dark energy, tropical mix, fruit punch, энергетик, BURN энергетик" />
+<meta name="author" content="BURN" />
+<meta name="robots" content="index,follow" />
+<link rel="canonical" href="https://daecreska.github.io/burn-energy/" />
+
+<!-- Open Graph -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="BURN" />
+<meta property="og:title" content="BURN — Energy Drink. Pure Kinetic Energy." />
+<meta property="og:description" content="Four flavors. One controlled detonation. Scroll-driven experience for BURN Energy Drink." />
+<meta property="og:url" content="https://daecreska.github.io/burn-energy/" />
+<meta property="og:image" content="https://daecreska.github.io/burn-energy/og-cover.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:locale:alternate" content="ru_RU" />
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="BURN — Energy Drink" />
+<meta name="twitter:description" content="Four flavors. Pure kinetic energy. Scroll the explosion." />
+<meta name="twitter:image" content="https://daecreska.github.io/burn-energy/og-cover.jpg" />
+
+<!-- Favicon (inline SVG flame) -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23000'/%3E%3Cpath d='M16 5 C14 10 10 12 10 17 a6 6 0 0 0 12 0 c0-3-1-5-3-7-1 1-2 2-3 2 0-3 1-5 0-7z' fill='%23CC2200'/%3E%3C/svg%3E" />
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23000'/%3E%3Cpath d='M16 5 C14 10 10 12 10 17 a6 6 0 0 0 12 0 c0-3-1-5-3-7-1 1-2 2-3 2 0-3 1-5 0-7z' fill='%23CC2200'/%3E%3C/svg%3E" />
+
+<!-- JSON-LD: Organization + Product -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "BURN",
+  "url": "https://daecreska.github.io/burn-energy/",
+  "logo": "https://daecreska.github.io/burn-energy/og-cover.jpg",
+  "sameAs": ["https://www.instagram.com/burn/", "https://twitter.com/burnenergy"]
+}
+</script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -191,6 +229,293 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
   *,*::before,*::after{transition-duration:.001s!important;animation-duration:.001s!important}
   #scroll-spacer{height:120vh}
 }
+
+/* ─── CART BUTTON IN NAV ─────────────────────────────── */
+.cart-button{position:relative;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;color:var(--color-text-primary);transition:color 250ms var(--ease-luxe),transform 250ms var(--ease-luxe),background 250ms var(--ease-luxe);padding:0}
+.cart-button:hover{color:var(--color-accent);background:var(--color-accent-soft);transform:translateY(-1px)}
+.cart-button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.cart-badge{position:absolute;top:-3px;right:-6px;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--color-accent);color:#000;font-family:"DM Sans",sans-serif;font-weight:500;font-size:.62rem;letter-spacing:0;display:inline-flex;align-items:center;justify-content:center;line-height:1;transform:scale(0);transition:transform 280ms var(--ease-luxe),background 500ms var(--ease-luxe);box-shadow:0 4px 12px var(--color-accent-glow);font-variant-numeric:tabular-nums}
+.cart-badge.is-visible{transform:scale(1)}
+.cart-badge.is-bumping{animation:badge-bump 460ms var(--ease-luxe)}
+@keyframes badge-bump{0%{transform:scale(1)}30%{transform:scale(1.45)}60%{transform:scale(.92)}100%{transform:scale(1)}}
+
+/* ─── CART DRAWER ────────────────────────────────────── */
+.cart-backdrop,.modal-backdrop{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,0.55);backdrop-filter:blur(8px) saturate(120%);-webkit-backdrop-filter:blur(8px) saturate(120%);opacity:0;pointer-events:none;transition:opacity 380ms var(--ease-luxe)}
+.cart-backdrop.is-open,.modal-backdrop.is-open{opacity:1;pointer-events:auto}
+[data-theme="light"] .cart-backdrop,[data-theme="light"] .modal-backdrop{background:rgba(10,10,10,0.35)}
+
+.cart-drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,92vw);z-index:90;background:rgba(10,10,10,0.72);backdrop-filter:blur(28px) saturate(160%);-webkit-backdrop-filter:blur(28px) saturate(160%);border-left:1px solid var(--color-border);box-shadow:-40px 0 80px rgba(0,0,0,0.6);display:flex;flex-direction:column;transform:translateX(100%);transition:transform 540ms cubic-bezier(.22,1.18,.36,1),background 500ms var(--ease-luxe),border-color 500ms var(--ease-luxe);will-change:transform;color:var(--color-text-primary)}
+[data-theme="light"] .cart-drawer{background:rgba(240,237,232,0.88)}
+.cart-drawer.is-open{transform:translateX(0)}
+
+.cart-head{display:flex;align-items:flex-start;justify-content:space-between;padding:32px 32px 22px;border-bottom:1px solid var(--color-border)}
+.cart-head-eyebrow{font-size:.6rem;letter-spacing:.4em;text-transform:uppercase;color:var(--color-text-secondary);display:block;margin-bottom:8px}
+.cart-head-name{font-family:"Bebas Neue",sans-serif;font-size:1.8rem;letter-spacing:.08em;line-height:1}
+.cart-close{width:36px;height:36px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:var(--color-text-secondary);transition:color 250ms var(--ease-luxe),background 250ms var(--ease-luxe),transform 250ms var(--ease-luxe)}
+.cart-close:hover{color:var(--color-accent);background:var(--color-accent-soft);transform:rotate(90deg)}
+.cart-close svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+
+.cart-body{flex:1;overflow-y:auto;padding:20px 32px 24px;scrollbar-width:thin;scrollbar-color:var(--color-border) transparent}
+.cart-body::-webkit-scrollbar{width:6px}
+.cart-body::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:999px}
+
+.cart-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:340px;gap:18px;color:var(--color-text-secondary)}
+.cart-empty-icon{width:84px;height:84px;border-radius:50%;border:1px solid var(--color-border);display:inline-flex;align-items:center;justify-content:center;color:var(--color-accent);position:relative;transition:border-color 500ms var(--ease-luxe),color 500ms var(--ease-luxe)}
+.cart-empty-icon::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:1px solid var(--color-accent);opacity:.4;animation:cart-ring 2400ms ease-in-out infinite}
+@keyframes cart-ring{0%,100%{transform:scale(1);opacity:.4}50%{transform:scale(1.08);opacity:0}}
+.cart-empty-icon svg{width:36px;height:36px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.cart-empty-title{font-family:"Bebas Neue",sans-serif;font-size:1.4rem;letter-spacing:.1em;color:var(--color-text-primary)}
+.cart-empty-text{font-size:.82rem;line-height:1.7;max-width:260px}
+
+.cart-list{display:flex;flex-direction:column;gap:14px}
+.cart-item{display:grid;grid-template-columns:64px 1fr auto;grid-template-rows:auto auto auto;gap:6px 14px;padding:14px;border:1px solid var(--color-border);border-radius:14px;background:rgba(255,255,255,0.02);position:relative;transition:transform 380ms var(--ease-luxe),opacity 380ms var(--ease-luxe),border-color 250ms var(--ease-luxe),background 250ms var(--ease-luxe),max-height 420ms var(--ease-luxe),margin 420ms var(--ease-luxe),padding 420ms var(--ease-luxe);max-height:200px;overflow:hidden}
+[data-theme="light"] .cart-item{background:rgba(0,0,0,0.02)}
+.cart-item:hover{border-color:rgba(255,255,255,0.18)}
+[data-theme="light"] .cart-item:hover{border-color:rgba(0,0,0,0.18)}
+.cart-item.is-removing{opacity:0;transform:translateX(40px);max-height:0;padding-top:0;padding-bottom:0;margin-top:-14px;border-color:transparent}
+.cart-item-thumb{grid-row:1/4;width:64px;height:80px;border-radius:8px;background-position:center;background-size:cover;background-repeat:no-repeat;background-color:var(--color-surface);position:relative;overflow:hidden}
+.cart-item-thumb::after{content:"";position:absolute;inset:0;border-radius:8px;box-shadow:inset 0 0 0 1px var(--color-border)}
+.cart-item-name{font-family:"Bebas Neue",sans-serif;font-size:1.1rem;letter-spacing:.08em;line-height:1.1;display:flex;align-items:center;gap:8px}
+.cart-item-dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
+.cart-item-sub{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--color-text-secondary)}
+.cart-item-controls{grid-column:2/4;grid-row:3;display:flex;align-items:center;justify-content:space-between;margin-top:6px}
+.qty-stepper{display:inline-flex;align-items:center;border:1px solid var(--color-border);border-radius:999px;padding:3px;gap:0;transition:border-color 250ms var(--ease-luxe)}
+.qty-stepper:hover{border-color:rgba(255,255,255,0.22)}
+[data-theme="light"] .qty-stepper:hover{border-color:rgba(0,0,0,0.22)}
+.qty-btn{width:26px;height:26px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;color:var(--color-text-primary);font-size:1.1rem;line-height:1;transition:background 200ms var(--ease-luxe),color 200ms var(--ease-luxe),transform 200ms var(--ease-luxe)}
+.qty-btn:hover{background:var(--color-accent-soft);color:var(--color-accent);transform:scale(1.08)}
+.qty-btn:disabled{opacity:.35;cursor:default}
+.qty-value{min-width:26px;text-align:center;font-variant-numeric:tabular-nums;font-size:.86rem;font-weight:500}
+.cart-item-price{font-family:"Bebas Neue",sans-serif;font-size:1rem;letter-spacing:.08em;color:var(--color-accent);transition:color 500ms var(--ease-luxe);font-variant-numeric:tabular-nums}
+.cart-item-remove{position:absolute;top:10px;right:10px;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:var(--color-text-secondary);transition:color 200ms var(--ease-luxe),background 200ms var(--ease-luxe),transform 200ms var(--ease-luxe);opacity:0}
+.cart-item:hover .cart-item-remove{opacity:1}
+.cart-item-remove:hover{color:#FF4444;background:rgba(255,68,68,0.12);transform:scale(1.08)}
+.cart-item-remove svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+
+.cart-foot{padding:18px 32px 30px;border-top:1px solid var(--color-border);display:flex;flex-direction:column;gap:14px;background:linear-gradient(to top,rgba(0,0,0,0.4),transparent)}
+[data-theme="light"] .cart-foot{background:linear-gradient(to top,rgba(240,237,232,0.5),transparent)}
+.cart-foot-row{display:flex;align-items:baseline;justify-content:space-between}
+.cart-foot-label{font-size:.7rem;letter-spacing:.3em;text-transform:uppercase;color:var(--color-text-secondary)}
+.cart-foot-total{font-family:"Bebas Neue",sans-serif;font-size:2rem;letter-spacing:.04em;color:var(--color-accent);transition:color 500ms var(--ease-luxe);font-variant-numeric:tabular-nums}
+.cart-checkout{width:100%;height:54px;font-size:1rem;letter-spacing:.18em;position:relative;overflow:hidden}
+.cart-foot-note{font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--color-text-secondary);text-align:center;margin-top:2px;line-height:1.6}
+
+/* ─── TOAST STACK ────────────────────────────────────── */
+.toast-stack{position:fixed;right:24px;bottom:24px;z-index:120;display:flex;flex-direction:column-reverse;gap:10px;pointer-events:none;max-width:360px}
+.toast{position:relative;display:flex;align-items:center;gap:12px;padding:12px 18px 12px 14px;background:rgba(15,15,15,0.86);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);border:1px solid var(--color-border);border-radius:14px;color:var(--color-text-primary);box-shadow:0 16px 50px rgba(0,0,0,0.5);font-size:.78rem;letter-spacing:.04em;line-height:1.4;overflow:hidden;pointer-events:auto;transform:translateX(20px);opacity:0;transition:transform 480ms var(--ease-luxe),opacity 380ms var(--ease-luxe)}
+[data-theme="light"] .toast{background:rgba(245,242,238,0.92);border-color:rgba(0,0,0,0.08);box-shadow:0 16px 50px rgba(0,0,0,0.12)}
+.toast.is-shown{transform:translateX(0);opacity:1}
+.toast.is-hiding{transform:translateX(40px);opacity:0}
+.toast::before{content:"";position:absolute;top:0;bottom:0;left:0;width:3px;background:var(--toast-accent,var(--color-accent));border-radius:14px 0 0 14px;transition:background 250ms ease}
+.toast-icon{width:32px;height:32px;border-radius:50%;background:var(--toast-accent-soft,var(--color-accent-soft));color:var(--toast-accent,var(--color-accent));display:inline-flex;align-items:center;justify-content:center;flex:none;transition:background 250ms ease,color 250ms ease}
+.toast-icon svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.toast-body{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.toast-title{font-family:"Bebas Neue",sans-serif;font-size:.96rem;letter-spacing:.12em;line-height:1}
+.toast-text{font-size:.72rem;color:var(--color-text-secondary);letter-spacing:.04em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.toast-progress{position:absolute;bottom:0;left:0;height:2px;width:100%;transform-origin:left center;background:var(--toast-accent,var(--color-accent));opacity:.6;animation:toast-progress var(--toast-life,3000ms) linear forwards}
+@keyframes toast-progress{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+.toast.toast-success{--toast-accent:#3ED68A;--toast-accent-soft:rgba(62,214,138,0.15)}
+.toast.toast-remove{--toast-accent:#FF5A5A;--toast-accent-soft:rgba(255,90,90,0.15)}
+.toast.toast-error  {--toast-accent:#FFB54A;--toast-accent-soft:rgba(255,181,74,0.15)}
+.toast.toast-info   {--toast-accent:var(--color-accent);--toast-accent-soft:var(--color-accent-soft)}
+
+/* ─── LEARN-MORE MODAL ───────────────────────────────── */
+.learn-modal{position:fixed;left:50%;top:50%;transform:translate(-50%,calc(-50% + 24px));z-index:90;width:min(540px,92vw);max-height:84vh;overflow-y:auto;background:rgba(12,12,12,0.78);backdrop-filter:blur(30px) saturate(160%);-webkit-backdrop-filter:blur(30px) saturate(160%);border:1px solid var(--color-border);border-radius:18px;padding:36px 36px 30px;opacity:0;pointer-events:none;transition:transform 540ms cubic-bezier(.22,1.18,.36,1),opacity 380ms var(--ease-luxe),background 500ms var(--ease-luxe)}
+[data-theme="light"] .learn-modal{background:rgba(245,242,238,0.92)}
+.learn-modal.is-open{opacity:1;transform:translate(-50%,-50%);pointer-events:auto}
+.learn-close{position:absolute;top:14px;right:14px}
+.learn-head{display:flex;flex-direction:column;gap:6px;margin-bottom:24px}
+.learn-title{font-family:"Bebas Neue",sans-serif;font-size:2.4rem;letter-spacing:.06em;line-height:1;color:var(--color-text-primary)}
+.learn-tagline{font-size:.85rem;color:var(--color-text-secondary);max-width:360px;line-height:1.6}
+.learn-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:22px}
+.learn-stat{padding:18px 16px;border:1px solid var(--color-border);border-radius:12px;display:flex;flex-direction:column;gap:6px;background:rgba(255,255,255,0.02);transition:transform 250ms var(--ease-luxe),border-color 250ms var(--ease-luxe)}
+[data-theme="light"] .learn-stat{background:rgba(0,0,0,0.02)}
+.learn-stat:hover{transform:translateY(-2px);border-color:var(--color-accent)}
+.learn-stat-val{font-family:"Bebas Neue",sans-serif;font-size:1.8rem;letter-spacing:.04em;color:var(--color-accent);transition:color 500ms var(--ease-luxe);line-height:1;font-variant-numeric:tabular-nums}
+.learn-stat-val small{font-size:.7rem;letter-spacing:.05em;margin-left:3px;opacity:.7}
+.learn-stat-key{font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;color:var(--color-text-secondary)}
+.learn-blurbs{display:flex;flex-direction:column;gap:10px}
+.learn-blurb{display:flex;gap:10px;font-size:.78rem;line-height:1.6;color:var(--color-text-secondary)}
+.learn-blurb-icon{color:var(--color-accent);transition:color 500ms var(--ease-luxe);font-size:.7rem;margin-top:2px}
+
+/* ─── BUTTON UPGRADES (ripple + price slot + pulse) ──── */
+.btn{position:relative;overflow:hidden}
+.btn-label{display:inline-flex;align-items:center;gap:8px}
+.btn-price{margin-left:14px;padding-left:14px;border-left:1px solid currentColor;opacity:.7;font-size:.85em;letter-spacing:.1em}
+.btn .ripple{position:absolute;border-radius:50%;background:rgba(0,0,0,0.28);pointer-events:none;transform:scale(0);animation:ripple-grow 620ms var(--ease-luxe) forwards}
+.btn-secondary .ripple{background:rgba(255,255,255,0.18)}
+[data-theme="light"] .btn-secondary .ripple{background:rgba(0,0,0,0.12)}
+@keyframes ripple-grow{to{transform:scale(2.6);opacity:0}}
+.btn.is-added{background:#3ED68A;border-color:#3ED68A;color:#001A0E;animation:btn-pulse 460ms var(--ease-luxe)}
+@keyframes btn-pulse{0%{transform:scale(1)}30%{transform:scale(.97)}60%{transform:scale(1.04)}100%{transform:scale(1)}}
+.btn.is-loading{pointer-events:none;color:transparent}
+.btn.is-loading::after{content:"";position:absolute;left:50%;top:50%;width:18px;height:18px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;color:#000;animation:spin 700ms linear infinite;transform:translate(-50%,-50%)}
+@keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+
+/* ─── STICKY NAV BEHAVIOR ────────────────────────────── */
+.top-nav{transition:transform 460ms var(--ease-luxe),background 460ms var(--ease-luxe),backdrop-filter 460ms var(--ease-luxe),border-color 460ms var(--ease-luxe);border-bottom:1px solid transparent}
+body.nav-hidden .top-nav{transform:translateY(-100%)}
+body.nav-floating .top-nav{background:rgba(10,10,10,0.5);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);border-bottom-color:var(--color-border)}
+[data-theme="light"] body.nav-floating .top-nav{background:rgba(240,237,232,0.65)}
+
+/* ─── SECTION FOUNDATION (below the hero) ────────────── */
+/* The hero is 600vh of scroll-spacer with a position:fixed canvas. After the
+   spacer ends, product-sections starts in normal flow. Its background fades
+   from transparent to --color-void over the first 160px so the canvas's last
+   frame eases out as the user scrolls into the product content. */
+.product-sections{position:relative;z-index:40;background:linear-gradient(to bottom,transparent 0%,var(--color-void) 22%,var(--color-void) 100%);padding:160px 0 0;display:flex;flex-direction:column;gap:140px;color:var(--color-text-primary);transition:background 500ms var(--ease-luxe),color 500ms var(--ease-luxe)}
+body.is-past-hero #stage,
+body.is-past-hero .left-block,
+body.is-past-hero .right-block,
+body.is-past-hero .bottom-cluster,
+body.is-past-hero .hint-toast{opacity:0!important;pointer-events:none}
+body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
+.section-wrap{max-width:1200px;margin:0 auto;padding:0 7vw;width:100%}
+.section-eyebrow{font-size:.7rem;letter-spacing:.45em;text-transform:uppercase;color:var(--color-accent);transition:color 500ms var(--ease-luxe);display:inline-flex;align-items:center;gap:14px;margin-bottom:18px}
+.section-eyebrow::after{content:"";width:48px;height:1px;background:var(--color-accent);transition:background 500ms var(--ease-luxe)}
+.section-title{font-family:"Bebas Neue",sans-serif;font-size:clamp(2.6rem,5vw,4.2rem);letter-spacing:.04em;line-height:.95;margin-bottom:22px}
+.section-lead{font-size:1rem;line-height:1.75;color:var(--color-text-secondary);max-width:620px}
+
+/* ─── SCROLL REVEAL ──────────────────────────────────── */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity 720ms var(--ease-luxe),transform 720ms var(--ease-luxe)}
+.reveal.is-visible{opacity:1;transform:translateY(0)}
+.reveal[data-delay="1"]{transition-delay:80ms}
+.reveal[data-delay="2"]{transition-delay:160ms}
+.reveal[data-delay="3"]{transition-delay:240ms}
+.reveal[data-delay="4"]{transition-delay:320ms}
+
+/* ─── NUTRITION ──────────────────────────────────────── */
+.nutrition-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-top:48px}
+.nutrition-card{padding:24px;border:1px solid var(--color-border);border-radius:14px;background:rgba(255,255,255,0.02);display:flex;flex-direction:column;gap:8px;transition:transform 380ms var(--ease-luxe),border-color 380ms var(--ease-luxe),box-shadow 380ms var(--ease-luxe)}
+[data-theme="light"] .nutrition-card{background:rgba(0,0,0,0.02)}
+.nutrition-card:hover{transform:translateY(-4px);border-color:var(--color-accent);box-shadow:0 18px 40px var(--color-accent-soft)}
+.nutrition-key{font-size:.62rem;letter-spacing:.34em;text-transform:uppercase;color:var(--color-text-secondary)}
+.nutrition-val{font-family:"Bebas Neue",sans-serif;font-size:2.4rem;letter-spacing:.03em;line-height:1;color:var(--color-text-primary);font-variant-numeric:tabular-nums}
+.nutrition-val small{font-size:.36em;letter-spacing:.05em;margin-left:4px;color:var(--color-accent);transition:color 500ms var(--ease-luxe);opacity:.85}
+.nutrition-note{font-size:.7rem;color:var(--color-text-secondary)}
+
+/* ─── INGREDIENTS ────────────────────────────────────── */
+.ingredient-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
+.ingredient-tag{padding:8px 14px;border-radius:999px;border:1px solid var(--color-border);font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--color-text-secondary);transition:color 250ms ease,border-color 250ms ease,background 250ms ease}
+.ingredient-tag:hover{color:var(--color-accent);border-color:var(--color-accent);background:var(--color-accent-soft)}
+.ingredient-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px 36px;margin-top:32px;font-size:.86rem;line-height:1.7;color:var(--color-text-secondary)}
+.ingredient-list li{list-style:none;padding-left:18px;position:relative}
+.ingredient-list li::before{content:"";position:absolute;left:0;top:.7em;width:6px;height:6px;border-radius:50%;background:var(--color-accent);transition:background 500ms var(--ease-luxe);transform:translateY(-50%)}
+
+/* ─── FAQ ────────────────────────────────────────────── */
+.faq-list{margin-top:48px;display:flex;flex-direction:column;border-top:1px solid var(--color-border)}
+.faq-item{border-bottom:1px solid var(--color-border)}
+.faq-q{width:100%;padding:24px 0;display:flex;align-items:center;justify-content:space-between;gap:24px;text-align:left;color:var(--color-text-primary);font-size:1.05rem;letter-spacing:.02em;transition:color 250ms ease}
+.faq-q:hover{color:var(--color-accent)}
+.faq-q-icon{width:28px;height:28px;border-radius:50%;border:1px solid var(--color-border);display:inline-flex;align-items:center;justify-content:center;flex:none;transition:background 280ms var(--ease-luxe),border-color 280ms var(--ease-luxe),transform 380ms var(--ease-luxe);color:var(--color-text-secondary);position:relative}
+.faq-q-icon::before,.faq-q-icon::after{content:"";position:absolute;background:currentColor;border-radius:1px;transition:transform 320ms var(--ease-luxe),opacity 320ms var(--ease-luxe)}
+.faq-q-icon::before{width:11px;height:1.5px}
+.faq-q-icon::after{width:1.5px;height:11px}
+.faq-item.is-open .faq-q-icon{background:var(--color-accent);border-color:var(--color-accent);color:#000}
+.faq-item.is-open .faq-q-icon::after{transform:scaleY(0)}
+.faq-a{max-height:0;overflow:hidden;font-size:.92rem;line-height:1.7;color:var(--color-text-secondary);transition:max-height 480ms var(--ease-luxe),padding 480ms var(--ease-luxe)}
+.faq-item.is-open .faq-a{padding-bottom:28px;max-height:400px}
+
+/* ─── REVIEWS ────────────────────────────────────────── */
+.reviews-summary{display:flex;align-items:flex-end;gap:28px;flex-wrap:wrap;margin-top:32px;margin-bottom:36px}
+.reviews-score{font-family:"Bebas Neue",sans-serif;font-size:5rem;line-height:1;letter-spacing:.02em;color:var(--color-accent);transition:color 500ms var(--ease-luxe);font-variant-numeric:tabular-nums}
+.reviews-stars{display:inline-flex;gap:3px;color:var(--color-accent);transition:color 500ms var(--ease-luxe)}
+.reviews-stars svg{width:18px;height:18px;fill:currentColor}
+.reviews-meta{display:flex;flex-direction:column;gap:6px;font-size:.78rem;color:var(--color-text-secondary)}
+.reviews-meta-top{display:flex;align-items:center;gap:14px}
+.reviews-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.review{padding:24px;border:1px solid var(--color-border);border-radius:14px;background:rgba(255,255,255,0.02);display:flex;flex-direction:column;gap:12px;transition:transform 380ms var(--ease-luxe),border-color 380ms var(--ease-luxe),box-shadow 380ms var(--ease-luxe)}
+[data-theme="light"] .review{background:rgba(0,0,0,0.02)}
+.review:hover{transform:translateY(-4px);border-color:var(--color-accent);box-shadow:0 20px 40px rgba(0,0,0,0.4)}
+.review-head{display:flex;align-items:center;gap:12px}
+.review-avatar{width:36px;height:36px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-family:"Bebas Neue",sans-serif;letter-spacing:.05em;color:#000;font-size:.85rem;flex:none}
+.review-name{font-size:.84rem;font-weight:500}
+.review-date{font-size:.68rem;color:var(--color-text-secondary);letter-spacing:.04em}
+.review-stars{display:inline-flex;gap:2px;color:var(--color-accent);transition:color 500ms var(--ease-luxe);margin-top:-2px}
+.review-stars svg{width:13px;height:13px;fill:currentColor}
+.review-text{font-size:.86rem;line-height:1.65;color:var(--color-text-secondary)}
+
+/* ─── RELATED ────────────────────────────────────────── */
+.related-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:48px}
+.related-card{position:relative;padding:28px 22px;border:1px solid var(--color-border);border-radius:14px;background:rgba(255,255,255,0.02);overflow:hidden;cursor:pointer;display:flex;flex-direction:column;gap:14px;transition:transform 420ms var(--ease-luxe),border-color 420ms var(--ease-luxe),box-shadow 420ms var(--ease-luxe)}
+[data-theme="light"] .related-card{background:rgba(0,0,0,0.02)}
+.related-card:hover{transform:translateY(-6px);border-color:var(--related-accent,var(--color-accent));box-shadow:0 24px 60px var(--related-glow,var(--color-accent-soft))}
+.related-thumb{width:90px;height:140px;background-position:center;background-size:cover;background-repeat:no-repeat;border-radius:8px;align-self:center;transition:transform 420ms var(--ease-luxe)}
+.related-card:hover .related-thumb{transform:translateY(-4px) rotate(-3deg)}
+.related-meta{text-align:center;display:flex;flex-direction:column;gap:4px}
+.related-num{font-size:.62rem;letter-spacing:.4em;text-transform:uppercase;color:var(--related-accent,var(--color-accent))}
+.related-name{font-family:"Bebas Neue",sans-serif;font-size:1.4rem;letter-spacing:.06em;line-height:1}
+.related-sub{font-size:.74rem;color:var(--color-text-secondary)}
+.related-price{margin-top:auto;padding-top:10px;border-top:1px solid var(--color-border);display:flex;align-items:center;justify-content:space-between;font-size:.78rem;color:var(--color-text-secondary)}
+.related-price strong{font-family:"Bebas Neue",sans-serif;font-size:1rem;letter-spacing:.06em;color:var(--related-accent,var(--color-accent));font-weight:400}
+
+/* ─── FOOTER ─────────────────────────────────────────── */
+.site-footer{padding:80px 7vw 60px;border-top:1px solid var(--color-border);display:flex;flex-direction:column;gap:36px;color:var(--color-text-secondary);font-size:.78rem;line-height:1.7}
+.footer-top{display:grid;grid-template-columns:1fr auto;gap:36px;align-items:start}
+.footer-brand{display:flex;flex-direction:column;gap:8px}
+.footer-logo{font-family:"Bebas Neue",sans-serif;font-size:2rem;letter-spacing:.18em;color:var(--color-text-primary)}
+.footer-tag{max-width:360px}
+.footer-cols{display:grid;grid-template-columns:repeat(3,minmax(120px,auto));gap:36px}
+.footer-col h4{font-family:"Bebas Neue",sans-serif;font-size:1rem;letter-spacing:.18em;color:var(--color-text-primary);margin-bottom:14px}
+.footer-col a{display:block;padding:4px 0;transition:color 200ms ease}
+.footer-col a:hover{color:var(--color-accent)}
+.footer-bottom{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;padding-top:24px;border-top:1px solid var(--color-border);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase}
+
+/* ─── CHECKOUT MODAL ─────────────────────────────────── */
+.checkout-modal{position:fixed;inset:0;z-index:130;background:rgba(0,0,0,0.92);backdrop-filter:blur(16px) saturate(120%);-webkit-backdrop-filter:blur(16px) saturate(120%);display:flex;align-items:center;justify-content:center;padding:6vh 5vw;opacity:0;pointer-events:none;transition:opacity 460ms var(--ease-luxe);overflow-y:auto}
+[data-theme="light"] .checkout-modal{background:rgba(240,237,232,0.94)}
+.checkout-modal.is-open{opacity:1;pointer-events:auto}
+.checkout-card{position:relative;width:min(720px,100%);background:rgba(14,14,14,0.78);border:1px solid var(--color-border);border-radius:18px;padding:48px 48px 40px;display:flex;flex-direction:column;gap:24px;transform:translateY(20px);transition:transform 540ms cubic-bezier(.22,1.18,.36,1)}
+[data-theme="light"] .checkout-card{background:rgba(245,242,238,0.92)}
+.checkout-modal.is-open .checkout-card{transform:translateY(0)}
+.checkout-steps{display:flex;align-items:center;gap:8px;font-size:.62rem;letter-spacing:.34em;text-transform:uppercase;color:var(--color-text-secondary)}
+.checkout-step{padding:6px 12px;border:1px solid var(--color-border);border-radius:999px;transition:all 360ms var(--ease-luxe)}
+.checkout-step.is-active{color:var(--color-accent);border-color:var(--color-accent);background:var(--color-accent-soft)}
+.checkout-step.is-done{color:#3ED68A;border-color:#3ED68A;background:rgba(62,214,138,0.1)}
+.checkout-eyebrow{font-size:.62rem;letter-spacing:.4em;text-transform:uppercase;color:var(--color-text-secondary)}
+.checkout-title{font-family:"Bebas Neue",sans-serif;font-size:2.6rem;letter-spacing:.04em;line-height:1;margin-bottom:6px}
+.checkout-lead{font-size:.86rem;line-height:1.7;color:var(--color-text-secondary);max-width:480px}
+.checkout-form{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}
+.checkout-field{display:flex;flex-direction:column;gap:6px}
+.checkout-field.full{grid-column:1/-1}
+.checkout-label{font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;color:var(--color-text-secondary)}
+.checkout-input{height:46px;padding:0 14px;background:transparent;border:1px solid var(--color-border);border-radius:8px;color:var(--color-text-primary);font:inherit;font-size:.92rem;letter-spacing:.02em;transition:border-color 240ms ease,background 240ms ease;outline:none}
+.checkout-input:focus{border-color:var(--color-accent);background:var(--color-accent-soft)}
+.checkout-input.is-invalid{border-color:#FF5A5A;background:rgba(255,90,90,0.06)}
+.checkout-error{font-size:.7rem;color:#FF5A5A;letter-spacing:.04em;min-height:14px;line-height:1.3}
+.checkout-summary{padding:18px 20px;border:1px solid var(--color-border);border-radius:12px;background:rgba(255,255,255,0.02);display:flex;flex-direction:column;gap:8px}
+[data-theme="light"] .checkout-summary{background:rgba(0,0,0,0.02)}
+.checkout-summary-row{display:flex;justify-content:space-between;font-size:.82rem;color:var(--color-text-secondary)}
+.checkout-summary-row.total{color:var(--color-text-primary);padding-top:8px;margin-top:4px;border-top:1px solid var(--color-border);font-size:1rem;letter-spacing:.08em;font-family:"Bebas Neue",sans-serif}
+.checkout-summary-row.total span:last-child{color:var(--color-accent);transition:color 500ms var(--ease-luxe);font-size:1.4rem;font-variant-numeric:tabular-nums}
+.checkout-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:8px}
+.checkout-success{display:flex;flex-direction:column;align-items:center;text-align:center;gap:18px;padding:30px 0 10px}
+.checkout-success-mark{width:84px;height:84px;border-radius:50%;background:rgba(62,214,138,0.15);border:1px solid #3ED68A;display:inline-flex;align-items:center;justify-content:center;color:#3ED68A;animation:check-pop 700ms cubic-bezier(.22,1.36,.36,1)}
+.checkout-success-mark svg{width:38px;height:38px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:48;stroke-dashoffset:48;animation:check-draw 600ms ease 200ms forwards}
+@keyframes check-pop{0%{transform:scale(0)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
+@keyframes check-draw{to{stroke-dashoffset:0}}
+.checkout-success-num{font-family:"Bebas Neue",sans-serif;font-size:1.4rem;letter-spacing:.14em;color:var(--color-accent);transition:color 500ms var(--ease-luxe)}
+.checkout-confetti{position:absolute;inset:0;overflow:hidden;pointer-events:none;border-radius:18px}
+.checkout-confetti span{position:absolute;width:8px;height:14px;background:var(--color-accent);top:-20px;transform-origin:center;animation:confetti-fall 2200ms ease-out forwards;opacity:.85}
+@keyframes confetti-fall{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(120vh) rotate(720deg);opacity:0}}
+
+/* ─── SKELETON LOADER ────────────────────────────────── */
+.skeleton{background:linear-gradient(90deg,rgba(255,255,255,0.04) 0%,rgba(255,255,255,0.10) 50%,rgba(255,255,255,0.04) 100%);background-size:200% 100%;animation:skeleton 1400ms ease infinite;border-radius:8px;color:transparent!important}
+[data-theme="light"] .skeleton{background:linear-gradient(90deg,rgba(0,0,0,0.04) 0%,rgba(0,0,0,0.10) 50%,rgba(0,0,0,0.04) 100%);background-size:200% 100%}
+@keyframes skeleton{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+@media (max-width:760px){
+  .cart-head,.cart-body,.cart-foot{padding-left:22px;padding-right:22px}
+  .checkout-card{padding:30px 22px 26px}
+  .checkout-form{grid-template-columns:1fr}
+  .product-sections{padding:120px 0 140px;gap:100px}
+  .reviews-summary{gap:18px}
+  .reviews-score{font-size:3.6rem}
+  .footer-top{grid-template-columns:1fr}
+  .footer-cols{grid-template-columns:repeat(2,1fr)}
+  .nutrition-val{font-size:2rem}
+  .toast-stack{right:14px;bottom:14px;left:14px;max-width:none}
+}
 </style>
 </head>
 <body>
@@ -218,9 +543,78 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
   <div class="nav-right">
     <button id="theme-toggle" class="theme-toggle is-interactive" aria-label="Toggle dark / light mode" aria-pressed="false"></button>
     <span class="nav-divider" aria-hidden="true"></span>
+    <button id="cart-button" class="cart-button is-interactive" aria-label="Open cart">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M5 7 H19 L17.5 18 Q17.3 19.5 15.8 19.5 H8.2 Q6.7 19.5 6.5 18 L5 7 Z"/>
+        <path d="M9 7 V5.5 A3 3 0 0 1 12 2.5 A3 3 0 0 1 15 5.5 V7"/>
+      </svg>
+      <span class="cart-badge" id="cart-badge" aria-live="polite">0</span>
+    </button>
+    <span class="nav-divider" aria-hidden="true"></span>
     <span class="nav-label">Energy Drink</span>
   </div>
 </nav>
+
+<!-- ─── CART DRAWER ────────────────────────────────────── -->
+<div class="cart-backdrop" id="cart-backdrop" aria-hidden="true"></div>
+<aside class="cart-drawer" id="cart-drawer" aria-label="Cart" aria-hidden="true" tabindex="-1">
+  <header class="cart-head">
+    <div class="cart-head-title">
+      <span class="cart-head-eyebrow">BURN — Cart</span>
+      <h2 class="cart-head-name">Корзина</h2>
+    </div>
+    <button class="cart-close is-interactive" id="cart-close" aria-label="Close cart">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5 L19 19 M19 5 L5 19"/></svg>
+    </button>
+  </header>
+
+  <div class="cart-body" id="cart-body">
+    <div class="cart-empty" id="cart-empty">
+      <div class="cart-empty-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M5 7 H19 L17.5 18 Q17.3 19.5 15.8 19.5 H8.2 Q6.7 19.5 6.5 18 L5 7 Z"/><path d="M9 7 V5.5 A3 3 0 0 1 12 2.5 A3 3 0 0 1 15 5.5 V7"/></svg>
+      </div>
+      <div class="cart-empty-title">Корзина пуста</div>
+      <p class="cart-empty-text">Добавьте&nbsp;что-нибудь заряжающее&nbsp;<span aria-hidden="true">⚡</span></p>
+    </div>
+    <div class="cart-list" id="cart-list" hidden></div>
+  </div>
+
+  <footer class="cart-foot" id="cart-foot" hidden>
+    <div class="cart-foot-row">
+      <span class="cart-foot-label">Итого</span>
+      <span class="cart-foot-total" id="cart-total">0 ₽</span>
+    </div>
+    <button class="btn btn-primary cart-checkout is-interactive" id="cart-checkout" type="button">Оформить заказ</button>
+    <p class="cart-foot-note">Бесплатная доставка от 999&nbsp;₽ · Оплата при получении</p>
+  </footer>
+</aside>
+
+<!-- ─── LEARN MORE MODAL ─────────────────────────────── -->
+<div class="modal-backdrop" id="learn-backdrop" aria-hidden="true"></div>
+<div class="learn-modal" id="learn-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="learn-modal-title">
+  <button class="cart-close is-interactive learn-close" id="learn-close" aria-label="Close">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5 L19 19 M19 5 L5 19"/></svg>
+  </button>
+  <div class="learn-head">
+    <span class="cart-head-eyebrow" id="learn-modal-eyebrow">Burn — Original</span>
+    <h2 class="learn-title" id="learn-modal-title">Pure Energy</h2>
+    <p class="learn-tagline" id="learn-modal-tagline">The one that started everything.</p>
+  </div>
+  <div class="learn-stats">
+    <div class="learn-stat"><span class="learn-stat-val">250<small>ml</small></span><span class="learn-stat-key">Volume</span></div>
+    <div class="learn-stat"><span class="learn-stat-val">32<small>mg</small></span><span class="learn-stat-key">Caffeine</span></div>
+    <div class="learn-stat"><span class="learn-stat-val">400<small>mg</small></span><span class="learn-stat-key">Taurine</span></div>
+    <div class="learn-stat"><span class="learn-stat-val">B3·B6·B12</span><span class="learn-stat-key">Vitamins</span></div>
+  </div>
+  <div class="learn-blurbs">
+    <div class="learn-blurb"><span class="learn-blurb-icon">◆</span><span>Functional caffeine + B-complex for a clean, sustained ride.</span></div>
+    <div class="learn-blurb"><span class="learn-blurb-icon">◆</span><span>Cold-served. Best between +2°C and +6°C.</span></div>
+    <div class="learn-blurb"><span class="learn-blurb-icon">◆</span><span>Not recommended during pregnancy or for children under 18.</span></div>
+  </div>
+</div>
+
+<!-- ─── TOAST STACK ──────────────────────────────────── -->
+<div class="toast-stack" id="toast-stack" aria-live="polite" aria-relevant="additions"></div>
 
 <!-- LEFT CONTENT -->
 <section class="left-block">
@@ -237,8 +631,11 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
     The one that started everything. Raw, unfiltered, and built for those who need no explanation.
   </p>
   <div class="cta-row">
-    <button class="btn btn-primary is-interactive" type="button">Add to Cart</button>
-    <button class="btn btn-secondary is-interactive" type="button">Learn More</button>
+    <button id="add-to-cart" class="btn btn-primary is-interactive" type="button">
+      <span class="btn-label">Add to Cart</span>
+      <span class="btn-price" id="btn-price">199 ₽</span>
+    </button>
+    <button id="learn-more" class="btn btn-secondary is-interactive" type="button">Learn More</button>
   </div>
 </section>
 
@@ -308,6 +705,188 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
 
 <!-- SCROLL SPACER -->
 <div id="scroll-spacer"></div>
+
+<!-- ─── PRODUCT SECTIONS (revealed after the hero) ───── -->
+<main class="product-sections" id="product-sections">
+
+  <!-- NUTRITION -->
+  <section class="section-wrap" id="section-nutrition">
+    <div class="section-eyebrow reveal">Nutrition</div>
+    <h2 class="section-title reveal" data-delay="1">Пищевая&nbsp;ценность</h2>
+    <p class="section-lead reveal" data-delay="2">Точное соотношение функциональных ингредиентов. Заряд без сахарного провала. Значения на 100&nbsp;мл — на банку 250&nbsp;мл умножай на 2,5.</p>
+    <div class="nutrition-grid">
+      <div class="nutrition-card reveal" data-delay="1"><span class="nutrition-key">Energy</span><span class="nutrition-val">52<small>kcal</small></span><span class="nutrition-note">за 100&nbsp;мл</span></div>
+      <div class="nutrition-card reveal" data-delay="2"><span class="nutrition-key">Caffeine</span><span class="nutrition-val">32<small>mg</small></span><span class="nutrition-note">контролируемое высвобождение</span></div>
+      <div class="nutrition-card reveal" data-delay="3"><span class="nutrition-key">Taurine</span><span class="nutrition-val">400<small>mg</small></span><span class="nutrition-note">для выносливости</span></div>
+      <div class="nutrition-card reveal" data-delay="4"><span class="nutrition-key">Inositol</span><span class="nutrition-val">50<small>mg</small></span><span class="nutrition-note">когнитивная поддержка</span></div>
+      <div class="nutrition-card reveal" data-delay="1"><span class="nutrition-key">Niacin B3</span><span class="nutrition-val">8<small>mg</small></span><span class="nutrition-note">50% дневной нормы</span></div>
+      <div class="nutrition-card reveal" data-delay="2"><span class="nutrition-key">Vitamin B6</span><span class="nutrition-val">1.4<small>mg</small></span><span class="nutrition-note">100% дневной нормы</span></div>
+      <div class="nutrition-card reveal" data-delay="3"><span class="nutrition-key">Vitamin B12</span><span class="nutrition-val">2.5<small>μg</small></span><span class="nutrition-note">100% дневной нормы</span></div>
+      <div class="nutrition-card reveal" data-delay="4"><span class="nutrition-key">Sugars</span><span class="nutrition-val">0<small>g</small></span><span class="nutrition-note">подсластители — стевия + сукралоза</span></div>
+    </div>
+  </section>
+
+  <!-- INGREDIENTS -->
+  <section class="section-wrap" id="section-ingredients">
+    <div class="section-eyebrow reveal">Composition</div>
+    <h2 class="section-title reveal" data-delay="1">Состав&nbsp;<br/>без&nbsp;компромиссов</h2>
+    <p class="section-lead reveal" data-delay="2">Чистая база. Никаких ароматизаторов, идентичных натуральным. Каждый ингредиент работает на единый результат — устойчивый, прозрачный заряд.</p>
+    <div class="ingredient-tags reveal" data-delay="3">
+      <span class="ingredient-tag">Vegan</span>
+      <span class="ingredient-tag">No&nbsp;Sugar</span>
+      <span class="ingredient-tag">Gluten-Free</span>
+      <span class="ingredient-tag">Non-GMO</span>
+      <span class="ingredient-tag">Cold-Filtered</span>
+    </div>
+    <ul class="ingredient-list reveal" data-delay="4">
+      <li>Дегазированная вода</li>
+      <li>Регулятор кислотности — лимонная кислота</li>
+      <li>Таурин 400&nbsp;мг / 100&nbsp;мл</li>
+      <li>Инозитол 50&nbsp;мг / 100&nbsp;мл</li>
+      <li>Натуральный кофеин 32&nbsp;мг / 100&nbsp;мл</li>
+      <li>Витамины группы B (B3, B6, B12)</li>
+      <li>Подсластители: стевиолгликозиды, сукралоза</li>
+      <li>Натуральные ароматизаторы</li>
+      <li>Краситель карамель E150d</li>
+    </ul>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section-wrap" id="section-faq">
+    <div class="section-eyebrow reveal">FAQ</div>
+    <h2 class="section-title reveal" data-delay="1">Частые&nbsp;вопросы</h2>
+    <p class="section-lead reveal" data-delay="2">Самое важное о BURN — за 30 секунд.</p>
+    <div class="faq-list reveal" data-delay="3" id="faq-list">
+      <details class="faq-item">
+        <summary class="faq-q"><span>Сколько кофеина в одной банке?</span><span class="faq-q-icon" aria-hidden="true"></span></summary>
+        <div class="faq-a">В банке 250&nbsp;мл — 80&nbsp;мг чистого кофеина. Это примерно одна классическая чашка эспрессо, но с контролируемым высвобождением: пик — через 25 минут, плавный спуск — без «дребезга» и резкого падения.</div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-q"><span>Можно пить каждый день?</span><span class="faq-q-icon" aria-hidden="true"></span></summary>
+        <div class="faq-a">Да, при соблюдении суточной нормы кофеина (до 400&nbsp;мг для взрослого). 2-3 банки в день — комфортный режим. Не рекомендуется на ночь и натощак.</div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-q"><span>Чем отличаются вкусы?</span><span class="faq-q-icon" aria-hidden="true"></span></summary>
+        <div class="faq-a">Функциональная база одинакова — кофеин, таурин, витамины B. Различаются только вкусоароматический профиль и оттенок банки. ORIGINAL — нейтральный, DARK ENERGY — кофе/карамель, TROPICAL MIX — ягоды и тропик, FRUIT PUNCH — цитрус-микс.</div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-q"><span>Есть ли сахар?</span><span class="faq-q-icon" aria-hidden="true"></span></summary>
+        <div class="faq-a">Ноль грамм. Подслащиваем стевиолгликозидами и сукралозой — без всплеска инсулина и без сахарной просадки через час.</div>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-q"><span>Как быстро доставляете?</span><span class="faq-q-icon" aria-hidden="true"></span></summary>
+        <div class="faq-a">Москва и Санкт-Петербург — день в день при заказе до 14:00. Регионы — 1-3 рабочих дня СДЭК или Boxberry. Бесплатно при заказе от 999&nbsp;₽.</div>
+      </details>
+    </div>
+  </section>
+
+  <!-- REVIEWS -->
+  <section class="section-wrap" id="section-reviews">
+    <div class="section-eyebrow reveal">Reviews</div>
+    <h2 class="section-title reveal" data-delay="1">Что&nbsp;говорят</h2>
+    <div class="reviews-summary reveal" data-delay="2">
+      <div class="reviews-score">4.8</div>
+      <div class="reviews-meta">
+        <div class="reviews-meta-top">
+          <span class="reviews-stars" id="reviews-stars" aria-hidden="true"></span>
+          <span>на основе 1 248 отзывов</span>
+        </div>
+        <span>92% покупателей рекомендуют BURN друзьям</span>
+      </div>
+    </div>
+    <div class="reviews-grid" id="reviews-grid">
+      <!-- populated by JS -->
+    </div>
+  </section>
+
+  <!-- RELATED -->
+  <section class="section-wrap" id="section-related">
+    <div class="section-eyebrow reveal">Other Flavors</div>
+    <h2 class="section-title reveal" data-delay="1">Похожие&nbsp;вкусы</h2>
+    <p class="section-lead reveal" data-delay="2">Нажми, чтобы переключить активный вкус — сцена сверху перерисуется с новой банкой.</p>
+    <div class="related-grid" id="related-grid">
+      <!-- populated by JS -->
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-top reveal">
+      <div class="footer-brand">
+        <span class="footer-logo">BURN</span>
+        <span class="footer-tag">Pure kinetic energy in a 250&nbsp;ml can. Made for moments when ordinary just won't do.</span>
+      </div>
+      <div class="footer-cols">
+        <div class="footer-col"><h4>Product</h4><a href="#section-nutrition">Nutrition</a><a href="#section-ingredients">Ingredients</a><a href="#section-faq">FAQ</a><a href="#section-reviews">Reviews</a></div>
+        <div class="footer-col"><h4>Company</h4><a href="#">About</a><a href="#">Press</a><a href="#">Careers</a><a href="#">Contact</a></div>
+        <div class="footer-col"><h4>Social</h4><a href="#">Instagram</a><a href="#">X / Twitter</a><a href="#">YouTube</a><a href="#">TikTok</a></div>
+      </div>
+    </div>
+    <div class="footer-bottom"><span>© 2025 BURN · All Rights Reserved</span><span>Privacy · Terms · Cookies</span></div>
+  </footer>
+</main>
+
+<!-- ─── CHECKOUT MODAL ─────────────────────────────────── -->
+<div class="checkout-modal" id="checkout-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="checkout-title">
+  <div class="checkout-card">
+    <button class="cart-close learn-close" id="checkout-close" aria-label="Close">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5 L19 19 M19 5 L5 19"/></svg>
+    </button>
+    <div class="checkout-steps" id="checkout-steps">
+      <span class="checkout-step is-active" data-step="form">1 · Контакты</span>
+      <span class="checkout-step" data-step="success">2 · Готово</span>
+    </div>
+    <div id="checkout-form-view">
+      <span class="checkout-eyebrow">Оформление заказа</span>
+      <h3 class="checkout-title" id="checkout-title">Финальный шаг</h3>
+      <p class="checkout-lead">Введите данные доставки — мы свяжемся для подтверждения в течение 15 минут.</p>
+      <form class="checkout-form" id="checkout-form" novalidate>
+        <div class="checkout-field">
+          <label class="checkout-label" for="co-name">Имя</label>
+          <input class="checkout-input" id="co-name" name="name" type="text" autocomplete="given-name" placeholder="Александр" required />
+          <span class="checkout-error" data-error-for="name"></span>
+        </div>
+        <div class="checkout-field">
+          <label class="checkout-label" for="co-phone">Телефон</label>
+          <input class="checkout-input" id="co-phone" name="phone" type="tel" autocomplete="tel" placeholder="+7 (___) ___-__-__" required />
+          <span class="checkout-error" data-error-for="phone"></span>
+        </div>
+        <div class="checkout-field full">
+          <label class="checkout-label" for="co-address">Адрес доставки</label>
+          <input class="checkout-input" id="co-address" name="address" type="text" autocomplete="street-address" placeholder="Город, улица, дом, квартира" required />
+          <span class="checkout-error" data-error-for="address"></span>
+        </div>
+        <div class="checkout-field full">
+          <label class="checkout-label" for="co-email">Email (необязательно)</label>
+          <input class="checkout-input" id="co-email" name="email" type="email" autocomplete="email" placeholder="you@domain.com" />
+          <span class="checkout-error" data-error-for="email"></span>
+        </div>
+        <div class="checkout-field full">
+          <div class="checkout-summary" id="checkout-summary">
+            <!-- populated by JS -->
+          </div>
+        </div>
+        <div class="checkout-field full checkout-actions">
+          <button type="button" class="btn btn-secondary is-interactive" id="checkout-back">Назад</button>
+          <button type="submit" class="btn btn-primary is-interactive" id="checkout-submit">Оплатить и заказать</button>
+        </div>
+      </form>
+    </div>
+    <div id="checkout-success-view" hidden>
+      <div class="checkout-success">
+        <div class="checkout-success-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M5 12 L10 17 L19 7"/></svg>
+        </div>
+        <span class="checkout-eyebrow">Заказ принят</span>
+        <h3 class="checkout-title">Спасибо за заказ</h3>
+        <p class="checkout-lead">Мы свяжемся с вами в течение 15 минут для подтверждения.</p>
+        <div class="checkout-success-num" id="checkout-order-num">Заказ #BRN-00000</div>
+        <button class="btn btn-primary is-interactive" id="checkout-done" type="button">Вернуться на сайт</button>
+      </div>
+      <div class="checkout-confetti" id="checkout-confetti" aria-hidden="true"></div>
+    </div>
+  </div>
+</div>
 
 <script>
 "use strict";
@@ -514,7 +1093,11 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
   }
 
   function computeScrollProgress() {
-    const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    // Map scroll progress to the hero spacer only, not the whole document.
+    // Once user scrolls past the spacer, progress stays at 1.0 (frame 192).
+    const spacer = document.getElementById("scroll-spacer");
+    const heroH = spacer ? spacer.offsetHeight : window.innerHeight * 6;
+    const max = Math.max(1, heroH - window.innerHeight);
     const y = Math.min(max, Math.max(0, window.scrollY || window.pageYOffset || 0));
     return y / max;
   }
@@ -769,6 +1352,578 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
     if (e.target.closest && e.target.closest(".is-interactive,a,button")) cursor.classList.remove("is-hover");
   });
 
+  /* ─── CART STATE + LOCALSTORAGE ───────────────────── */
+  const PRICE = 199;               // ₽ per can
+  const SHIPPING_FREE_OVER = 999;  // ₽ — free shipping threshold
+  const SHIPPING_COST = 199;       // ₽ — flat shipping if under threshold
+  const CART_KEY = "burn_cart_v1";
+
+  /** @type {Array<{variantId:number,qty:number}>} */
+  let cart = [];
+
+  function loadCart() {
+    try {
+      const raw = localStorage.getItem(CART_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return;
+      cart = parsed.filter(
+        (it) => it && typeof it.variantId === "number" && typeof it.qty === "number" && it.qty > 0 && VARIANTS[it.variantId]
+      );
+    } catch (_) { cart = []; }
+  }
+  function persistCart() {
+    try { localStorage.setItem(CART_KEY, JSON.stringify(cart)); } catch (_) {}
+  }
+
+  function cartItemCount()  { return cart.reduce((s, it) => s + it.qty, 0); }
+  function cartSubtotal()   { return cart.reduce((s, it) => s + it.qty * PRICE, 0); }
+  function cartShipping()   { return cart.length === 0 || cartSubtotal() >= SHIPPING_FREE_OVER ? 0 : SHIPPING_COST; }
+  function cartTotal()      { return cartSubtotal() + cartShipping(); }
+  function fmtMoney(n)      { return n.toLocaleString("ru-RU") + " ₽"; }
+
+  function addToCartByVariant(variantId) {
+    const existing = cart.find((it) => it.variantId === variantId);
+    if (existing) {
+      existing.qty = Math.min(99, existing.qty + 1);
+    } else {
+      cart.push({ variantId, qty: 1 });
+    }
+    persistCart();
+    renderCart();
+    bumpBadge();
+  }
+  function changeQty(variantId, delta) {
+    const it = cart.find((x) => x.variantId === variantId);
+    if (!it) return;
+    it.qty = Math.max(1, Math.min(99, it.qty + delta));
+    persistCart();
+    renderCart();
+    bumpBadge();
+  }
+  function removeFromCart(variantId, { animated = true } = {}) {
+    const idx = cart.findIndex((x) => x.variantId === variantId);
+    if (idx === -1) return;
+    const v = VARIANTS[variantId];
+    if (animated) {
+      const row = document.querySelector(`.cart-item[data-vid="${variantId}"]`);
+      if (row) row.classList.add("is-removing");
+    }
+    setTimeout(() => {
+      cart.splice(idx, 1);
+      persistCart();
+      renderCart();
+      updateBadge();
+      showToast({
+        type: "remove",
+        title: v.name,
+        text: "удалён из корзины",
+      });
+    }, animated ? 360 : 0);
+  }
+  function clearCart() {
+    cart = [];
+    persistCart();
+    renderCart();
+    updateBadge();
+  }
+
+  /* ─── BADGE ─────────────────────────────────────────── */
+  const elCartBadge = document.getElementById("cart-badge");
+  function updateBadge() {
+    const n = cartItemCount();
+    elCartBadge.textContent = n > 99 ? "99+" : String(n);
+    elCartBadge.classList.toggle("is-visible", n > 0);
+  }
+  function bumpBadge() {
+    updateBadge();
+    elCartBadge.classList.remove("is-bumping");
+    // restart the animation
+    void elCartBadge.offsetWidth;
+    elCartBadge.classList.add("is-bumping");
+  }
+
+  /* ─── CART DRAWER RENDER ────────────────────────────── */
+  const elCartDrawer  = document.getElementById("cart-drawer");
+  const elCartBackdrop= document.getElementById("cart-backdrop");
+  const elCartBody    = document.getElementById("cart-body");
+  const elCartEmpty   = document.getElementById("cart-empty");
+  const elCartList    = document.getElementById("cart-list");
+  const elCartFoot    = document.getElementById("cart-foot");
+  const elCartTotal   = document.getElementById("cart-total");
+
+  function renderCart() {
+    if (cart.length === 0) {
+      elCartEmpty.style.display = "";
+      elCartList.hidden = true;
+      elCartFoot.hidden = true;
+    } else {
+      elCartEmpty.style.display = "none";
+      elCartList.hidden = false;
+      elCartFoot.hidden = false;
+      // Rebuild only if the set of variantIds changed; otherwise patch qty + price.
+      const desiredKeys = cart.map(it => String(it.variantId)).join(",");
+      if (elCartList.dataset.keys !== desiredKeys) {
+        elCartList.innerHTML = "";
+        cart.forEach((it) => {
+          const v = VARIANTS[it.variantId];
+          const row = document.createElement("div");
+          row.className = "cart-item";
+          row.dataset.vid = String(it.variantId);
+          row.innerHTML = `
+            <div class="cart-item-thumb" style="background-image:url('${v.folder}/frame_001.webp')" aria-hidden="true"></div>
+            <div class="cart-item-name"><span class="cart-item-dot" style="background:${v.accent}"></span>${v.name}</div>
+            <div class="cart-item-price" data-price>${fmtMoney(it.qty * PRICE)}</div>
+            <div class="cart-item-sub">${v.subtitle}</div>
+            <div class="cart-item-controls">
+              <div class="qty-stepper" role="group" aria-label="Quantity">
+                <button class="qty-btn is-interactive" data-act="dec" aria-label="Decrease quantity">−</button>
+                <span class="qty-value" data-qty>${it.qty}</span>
+                <button class="qty-btn is-interactive" data-act="inc" aria-label="Increase quantity">+</button>
+              </div>
+              <button class="cart-item-remove is-interactive" data-act="rm" aria-label="Remove from cart">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5 L19 19 M19 5 L5 19"/></svg>
+              </button>
+            </div>`;
+          elCartList.appendChild(row);
+        });
+        elCartList.dataset.keys = desiredKeys;
+      } else {
+        // Patch existing rows
+        cart.forEach((it) => {
+          const row = elCartList.querySelector(`.cart-item[data-vid="${it.variantId}"]`);
+          if (!row) return;
+          row.querySelector("[data-qty]").textContent = it.qty;
+          row.querySelector("[data-price]").textContent = fmtMoney(it.qty * PRICE);
+        });
+      }
+    }
+    elCartTotal.textContent = fmtMoney(cartTotal());
+    updateBadge();
+  }
+
+  // Event delegation for qty/remove buttons inside the drawer
+  elCartList.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-act]");
+    if (!btn) return;
+    const row = btn.closest(".cart-item");
+    if (!row) return;
+    const vid = parseInt(row.dataset.vid, 10);
+    if (btn.dataset.act === "inc") changeQty(vid, +1);
+    else if (btn.dataset.act === "dec") {
+      const it = cart.find((x) => x.variantId === vid);
+      if (it && it.qty === 1) removeFromCart(vid);
+      else changeQty(vid, -1);
+    }
+    else if (btn.dataset.act === "rm") removeFromCart(vid);
+  });
+
+  function openCart() {
+    elCartDrawer.classList.add("is-open");
+    elCartBackdrop.classList.add("is-open");
+    elCartDrawer.setAttribute("aria-hidden", "false");
+    elCartBackdrop.setAttribute("aria-hidden", "false");
+    document.body.classList.add("cart-open");
+  }
+  function closeCart() {
+    elCartDrawer.classList.remove("is-open");
+    elCartBackdrop.classList.remove("is-open");
+    elCartDrawer.setAttribute("aria-hidden", "true");
+    elCartBackdrop.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("cart-open");
+  }
+  document.getElementById("cart-button").addEventListener("click", openCart);
+  document.getElementById("cart-close").addEventListener("click", closeCart);
+  elCartBackdrop.addEventListener("click", closeCart);
+
+  /* ─── TOAST SYSTEM ──────────────────────────────────── */
+  const elToastStack = document.getElementById("toast-stack");
+  /** @type {Map<string, {el:HTMLElement,timer:number,count:number}>} */
+  const liveToasts = new Map();
+
+  function showToast({ type = "info", title, text, key, life = 3200 }) {
+    const stackKey = key || `${type}::${title}`;
+    // Dedupe — if a toast with same key is live, bump its qty pill instead.
+    const existing = liveToasts.get(stackKey);
+    if (existing) {
+      existing.count += 1;
+      const pill = existing.el.querySelector(".toast-count");
+      if (pill) pill.textContent = `×${existing.count}`;
+      else {
+        const c = document.createElement("span");
+        c.className = "toast-count";
+        c.textContent = `×${existing.count}`;
+        c.style.cssText = "margin-left:auto;font-family:'Bebas Neue',sans-serif;font-size:.9rem;letter-spacing:.05em;color:var(--toast-accent);padding:2px 8px;border:1px solid var(--toast-accent);border-radius:999px;line-height:1";
+        existing.el.querySelector(".toast-body").appendChild(c);
+      }
+      // restart progress
+      const bar = existing.el.querySelector(".toast-progress");
+      if (bar) { bar.style.animation = "none"; void bar.offsetWidth; bar.style.animation = ""; }
+      clearTimeout(existing.timer);
+      existing.timer = window.setTimeout(() => hideToast(stackKey), life);
+      return;
+    }
+
+    const toast = document.createElement("div");
+    toast.className = `toast toast-${type}`;
+    toast.style.setProperty("--toast-life", life + "ms");
+    toast.innerHTML = `
+      <span class="toast-icon" aria-hidden="true">${toastIconSvg(type)}</span>
+      <div class="toast-body">
+        <span class="toast-title">${title || ""}</span>
+        ${text ? `<span class="toast-text">${text}</span>` : ""}
+      </div>
+      <span class="toast-progress" aria-hidden="true"></span>`;
+    elToastStack.appendChild(toast);
+    // Trigger entrance transition next frame
+    requestAnimationFrame(() => toast.classList.add("is-shown"));
+    const timer = window.setTimeout(() => hideToast(stackKey), life);
+    liveToasts.set(stackKey, { el: toast, timer, count: 1 });
+  }
+  function hideToast(stackKey) {
+    const entry = liveToasts.get(stackKey);
+    if (!entry) return;
+    entry.el.classList.add("is-hiding");
+    entry.el.classList.remove("is-shown");
+    clearTimeout(entry.timer);
+    setTimeout(() => {
+      entry.el.remove();
+      liveToasts.delete(stackKey);
+    }, 480);
+  }
+  function toastIconSvg(type) {
+    if (type === "success") return `<svg viewBox="0 0 24 24"><path d="M5 12 L10 17 L19 7"/></svg>`;
+    if (type === "remove")  return `<svg viewBox="0 0 24 24"><path d="M5 5 L19 19 M19 5 L5 19"/></svg>`;
+    if (type === "error")   return `<svg viewBox="0 0 24 24"><path d="M12 4 L12 14 M12 18 L12 19.5"/></svg>`;
+    return `<svg viewBox="0 0 24 24"><path d="M12 8 L12 13 M12 16 L12 16.5"/></svg>`;
+  }
+
+  /* ─── RIPPLE EFFECT on .btn ────────────────────────── */
+  function attachRipple(btn) {
+    btn.addEventListener("click", (e) => {
+      if (btn.classList.contains("is-loading") || btn.disabled) return;
+      const r = document.createElement("span");
+      r.className = "ripple";
+      const rect = btn.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height);
+      r.style.width = r.style.height = size + "px";
+      r.style.left = (e.clientX - rect.left - size / 2) + "px";
+      r.style.top  = (e.clientY - rect.top  - size / 2) + "px";
+      btn.appendChild(r);
+      setTimeout(() => r.remove(), 640);
+    });
+  }
+  document.querySelectorAll(".btn").forEach(attachRipple);
+
+  /* ─── ADD TO CART BUTTON ────────────────────────────── */
+  const elAddBtn   = document.getElementById("add-to-cart");
+  const elBtnLabel = elAddBtn.querySelector(".btn-label");
+  const elBtnPrice = document.getElementById("btn-price");
+  const ADD_LABEL_DEFAULT = elBtnLabel.textContent;
+  let addBtnResetTimer = 0;
+
+  elAddBtn.addEventListener("click", () => {
+    if (elAddBtn.classList.contains("is-loading")) return;
+    const v = VARIANTS[currentVariant];
+    elAddBtn.classList.add("is-loading");
+    // Tiny artificial delay to communicate work + give the ripple time to play
+    setTimeout(() => {
+      addToCartByVariant(currentVariant);
+      elAddBtn.classList.remove("is-loading");
+      elAddBtn.classList.add("is-added");
+      elBtnLabel.textContent = "✓ Добавлено";
+      showToast({
+        type: "success",
+        title: v.name,
+        text: "добавлен в корзину",
+        key: `add::${v.id}`,
+      });
+      clearTimeout(addBtnResetTimer);
+      addBtnResetTimer = window.setTimeout(() => {
+        elAddBtn.classList.remove("is-added");
+        elBtnLabel.textContent = ADD_LABEL_DEFAULT;
+      }, 1400);
+    }, 220);
+  });
+
+  /* ─── LEARN MORE MODAL ──────────────────────────────── */
+  const elLearnModal    = document.getElementById("learn-modal");
+  const elLearnBackdrop = document.getElementById("learn-backdrop");
+  const elLearnEyebrow  = document.getElementById("learn-modal-eyebrow");
+  const elLearnTitle    = document.getElementById("learn-modal-title");
+  const elLearnTagline  = document.getElementById("learn-modal-tagline");
+  function openLearn() {
+    const v = VARIANTS[currentVariant];
+    elLearnEyebrow.textContent = `Burn — ${v.name}`;
+    elLearnTitle.textContent   = v.subtitle;
+    elLearnTagline.textContent = v.description;
+    elLearnModal.classList.add("is-open");
+    elLearnBackdrop.classList.add("is-open");
+    elLearnModal.setAttribute("aria-hidden", "false");
+  }
+  function closeLearn() {
+    elLearnModal.classList.remove("is-open");
+    elLearnBackdrop.classList.remove("is-open");
+    elLearnModal.setAttribute("aria-hidden", "true");
+  }
+  document.getElementById("learn-more").addEventListener("click", openLearn);
+  document.getElementById("learn-close").addEventListener("click", closeLearn);
+  elLearnBackdrop.addEventListener("click", closeLearn);
+
+  /* ─── REVIEWS + STARS + RELATED ─────────────────────── */
+  const REVIEWS = [
+    { name: "Артём К.",   date: "12.04.2025", stars: 5, text: "Реальный заряд без сахарной комы. Беру ящиками — TROPICAL MIX вне конкуренции.", color: "#CC2200" },
+    { name: "Дмитрий Л.", date: "08.04.2025", stars: 5, text: "Лучший энергетик, который пробовал. Чисто, без послевкусия. На сменах летает.", color: "#E8A000" },
+    { name: "Ольга М.",   date: "01.04.2025", stars: 5, text: "Дизайн банки — отдельный кайф. Вкус FRUIT PUNCH — детонация во рту, как и обещают.", color: "#7B2FBE" },
+    { name: "Иван П.",    date: "27.03.2025", stars: 4, text: "DARK ENERGY — мой стандарт. Минус полбалла за то, что в регионах не везде есть.", color: "#1A6FCC" },
+    { name: "Лиза С.",    date: "19.03.2025", stars: 5, text: "Без сахара — топ. Не «бьёт» как старые энергетики, держит ровно весь день.", color: "#CC2200" },
+    { name: "Кирилл В.",  date: "10.03.2025", stars: 5, text: "Скролл-сайт сам по себе шедевр. Заказал по три каждого, посмотрим что зайдёт.", color: "#7B2FBE" },
+  ];
+  function starRow(filled, size = 13) {
+    let svg = "";
+    for (let i = 0; i < 5; i++) {
+      const o = i < filled ? 1 : 0.18;
+      svg += `<svg viewBox="0 0 24 24" style="opacity:${o}"><path d="M12 2 L14.6 9 L22 9.5 L16.3 14.3 L18.2 21.5 L12 17.3 L5.8 21.5 L7.7 14.3 L2 9.5 L9.4 9 Z"/></svg>`;
+    }
+    return svg;
+  }
+  function renderReviews() {
+    const summary = document.getElementById("reviews-stars");
+    if (summary) summary.innerHTML = starRow(5, 18);
+    const grid = document.getElementById("reviews-grid");
+    if (!grid) return;
+    grid.innerHTML = REVIEWS.map((r, i) => `
+      <div class="review reveal" data-delay="${(i % 4) + 1}">
+        <div class="review-head">
+          <span class="review-avatar" style="background:${r.color}">${r.name[0]}</span>
+          <div>
+            <div class="review-name">${r.name}</div>
+            <div class="review-date">${r.date}</div>
+          </div>
+          <span class="review-stars" style="margin-left:auto" aria-label="${r.stars} stars">${starRow(r.stars)}</span>
+        </div>
+        <p class="review-text">${r.text}</p>
+      </div>`).join("");
+  }
+  function renderRelated() {
+    const grid = document.getElementById("related-grid");
+    if (!grid) return;
+    grid.innerHTML = VARIANTS.map((v, i) => `
+      <button class="related-card reveal is-interactive" type="button" data-variant="${v.id}" data-delay="${(i % 4) + 1}" style="--related-accent:${v.accent};--related-glow:${v.soft}">
+        <div class="related-thumb" style="background-image:url('${v.folder}/frame_001.webp')"></div>
+        <div class="related-meta">
+          <span class="related-num">${v.num}</span>
+          <span class="related-name">${v.name}</span>
+          <span class="related-sub">${v.subtitle}</span>
+        </div>
+        <div class="related-price"><span>250 мл · 1 шт.</span><strong>${PRICE} ₽</strong></div>
+      </button>`).join("");
+    grid.querySelectorAll(".related-card").forEach((card) => {
+      card.addEventListener("click", () => {
+        const id = parseInt(card.dataset.variant, 10);
+        switchToVariant(id);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    });
+  }
+
+  /* ─── FAQ ACCORDION ─────────────────────────────────── */
+  document.getElementById("faq-list")?.addEventListener("click", (e) => {
+    const summary = e.target.closest(".faq-q");
+    if (!summary) return;
+    e.preventDefault();
+    const item = summary.parentElement;
+    const wasOpen = item.classList.contains("is-open");
+    document.querySelectorAll(".faq-item.is-open").forEach((el) => el.classList.remove("is-open"));
+    if (!wasOpen) item.classList.add("is-open");
+  });
+
+  /* ─── SCROLL REVEAL via IntersectionObserver ───────── */
+  function initRevealObserver() {
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((en) => {
+        if (en.isIntersecting) {
+          en.target.classList.add("is-visible");
+          io.unobserve(en.target);
+        }
+      }),
+      { rootMargin: "-10% 0px -10% 0px", threshold: 0.1 }
+    );
+    document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
+    return io;
+  }
+
+  /* ─── STICKY NAV (auto-hide on down, show on up) ───── */
+  let lastNavY = 0;
+  let navAccum = 0;
+  function updateNavOnScroll() {
+    const y = window.scrollY || 0;
+    const dy = y - lastNavY;
+    if (y < 80) {
+      document.body.classList.remove("nav-hidden", "nav-floating");
+    } else {
+      document.body.classList.add("nav-floating");
+      // Accumulate scroll direction to avoid jitter
+      if (Math.sign(dy) !== Math.sign(navAccum)) navAccum = 0;
+      navAccum += dy;
+      if (navAccum > 60)       { document.body.classList.add("nav-hidden");    navAccum = 0; }
+      else if (navAccum < -40) { document.body.classList.remove("nav-hidden"); navAccum = 0; }
+    }
+    // Reveal product sections after hero
+    const spacer = document.getElementById("scroll-spacer");
+    const heroH = spacer ? spacer.offsetHeight : window.innerHeight * 6;
+    if (y > heroH - window.innerHeight * 0.5) document.body.classList.add("is-past-hero");
+    else                                       document.body.classList.remove("is-past-hero");
+    lastNavY = y;
+  }
+  window.addEventListener("scroll", updateNavOnScroll, { passive: true });
+
+  /* ─── CHECKOUT FLOW ─────────────────────────────────── */
+  const elCheckoutModal   = document.getElementById("checkout-modal");
+  const elCheckoutForm    = document.getElementById("checkout-form");
+  const elCheckoutSummary = document.getElementById("checkout-summary");
+  const elCheckoutSteps   = document.getElementById("checkout-steps");
+  const elCheckoutFormView    = document.getElementById("checkout-form-view");
+  const elCheckoutSuccessView = document.getElementById("checkout-success-view");
+  const elCheckoutOrderNum    = document.getElementById("checkout-order-num");
+  const elCheckoutConfetti    = document.getElementById("checkout-confetti");
+
+  function renderCheckoutSummary() {
+    const lines = cart.map((it) => {
+      const v = VARIANTS[it.variantId];
+      return `<div class="checkout-summary-row"><span>${v.name} × ${it.qty}</span><span>${fmtMoney(it.qty * PRICE)}</span></div>`;
+    });
+    const ship = cartShipping();
+    lines.push(`<div class="checkout-summary-row"><span>Доставка</span><span>${ship === 0 ? "Бесплатно" : fmtMoney(ship)}</span></div>`);
+    lines.push(`<div class="checkout-summary-row total"><span>Итого</span><span>${fmtMoney(cartTotal())}</span></div>`);
+    elCheckoutSummary.innerHTML = lines.join("");
+  }
+
+  function openCheckout() {
+    if (cart.length === 0) {
+      showToast({ type: "error", title: "Корзина пуста", text: "Добавьте товары перед оформлением" });
+      return;
+    }
+    renderCheckoutSummary();
+    elCheckoutFormView.hidden = false;
+    elCheckoutSuccessView.hidden = true;
+    setCheckoutStep("form");
+    closeCart();
+    elCheckoutModal.classList.add("is-open");
+    elCheckoutModal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("checkout-open");
+    setTimeout(() => document.getElementById("co-name")?.focus(), 200);
+  }
+  function closeCheckout() {
+    elCheckoutModal.classList.remove("is-open");
+    elCheckoutModal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("checkout-open");
+  }
+  function setCheckoutStep(step) {
+    elCheckoutSteps.querySelectorAll(".checkout-step").forEach((el) => {
+      const s = el.dataset.step;
+      el.classList.remove("is-active", "is-done");
+      if (s === step) el.classList.add("is-active");
+      if (step === "success" && s === "form") el.classList.add("is-done");
+    });
+  }
+
+  function validatePhone(raw) {
+    const digits = (raw || "").replace(/\D/g, "");
+    return digits.length >= 10 && digits.length <= 12;
+  }
+  function validateEmail(raw) {
+    if (!raw) return true; // optional
+    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(raw);
+  }
+
+  function setFieldError(name, msg) {
+    const input = elCheckoutForm.querySelector(`[name="${name}"]`);
+    const err = elCheckoutForm.querySelector(`[data-error-for="${name}"]`);
+    if (msg) {
+      input?.classList.add("is-invalid");
+      if (err) err.textContent = msg;
+    } else {
+      input?.classList.remove("is-invalid");
+      if (err) err.textContent = "";
+    }
+  }
+
+  // Phone autoformatter +7 (XXX) XXX-XX-XX
+  const elPhone = document.getElementById("co-phone");
+  elPhone?.addEventListener("input", () => {
+    let d = elPhone.value.replace(/\D/g, "");
+    if (d.startsWith("8")) d = "7" + d.slice(1);
+    if (!d.startsWith("7")) d = "7" + d;
+    d = d.slice(0, 11);
+    let out = "+7";
+    if (d.length > 1)  out += " (" + d.slice(1, 4);
+    if (d.length >= 4) out += ") " + d.slice(4, 7);
+    if (d.length >= 7) out += "-" + d.slice(7, 9);
+    if (d.length >= 9) out += "-" + d.slice(9, 11);
+    elPhone.value = out;
+  });
+
+  elCheckoutForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const fd = new FormData(elCheckoutForm);
+    const name    = (fd.get("name") || "").toString().trim();
+    const phone   = (fd.get("phone") || "").toString().trim();
+    const address = (fd.get("address") || "").toString().trim();
+    const email   = (fd.get("email") || "").toString().trim();
+    let ok = true;
+    if (name.length < 2) { setFieldError("name", "Минимум 2 символа"); ok = false; } else setFieldError("name", "");
+    if (!validatePhone(phone)) { setFieldError("phone", "Введите корректный телефон"); ok = false; } else setFieldError("phone", "");
+    if (address.length < 6) { setFieldError("address", "Укажите полный адрес"); ok = false; } else setFieldError("address", "");
+    if (!validateEmail(email)) { setFieldError("email", "Некорректный email"); ok = false; } else setFieldError("email", "");
+    if (!ok) {
+      showToast({ type: "error", title: "Проверьте форму", text: "Не все поля заполнены корректно", key: "checkout-invalid" });
+      return;
+    }
+    // Simulate processing
+    const submitBtn = document.getElementById("checkout-submit");
+    submitBtn.classList.add("is-loading");
+    setTimeout(() => {
+      submitBtn.classList.remove("is-loading");
+      const orderNum = "BRN-" + Math.floor(10000 + Math.random() * 89999);
+      elCheckoutOrderNum.textContent = "Заказ #" + orderNum;
+      elCheckoutFormView.hidden = true;
+      elCheckoutSuccessView.hidden = false;
+      setCheckoutStep("success");
+      fireConfetti();
+      clearCart();
+    }, 900);
+  });
+
+  document.getElementById("checkout-close").addEventListener("click", closeCheckout);
+  document.getElementById("checkout-back").addEventListener("click", () => { closeCheckout(); openCart(); });
+  document.getElementById("checkout-done").addEventListener("click", closeCheckout);
+  document.getElementById("cart-checkout").addEventListener("click", openCheckout);
+
+  function fireConfetti() {
+    elCheckoutConfetti.innerHTML = "";
+    const colors = VARIANTS.map((v) => v.accent).concat(["#3ED68A", "#FFFFFF"]);
+    for (let i = 0; i < 60; i++) {
+      const p = document.createElement("span");
+      p.style.left = Math.random() * 100 + "%";
+      p.style.background = colors[Math.floor(Math.random() * colors.length)];
+      p.style.animationDelay = (Math.random() * 400) + "ms";
+      p.style.animationDuration = (1800 + Math.random() * 1400) + "ms";
+      p.style.width = (4 + Math.random() * 6) + "px";
+      p.style.height = (10 + Math.random() * 8) + "px";
+      elCheckoutConfetti.appendChild(p);
+    }
+    setTimeout(() => { elCheckoutConfetti.innerHTML = ""; }, 3000);
+  }
+
+  /* ─── GLOBAL ESC HANDLER ────────────────────────────── */
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    if (elCheckoutModal.classList.contains("is-open")) { closeCheckout(); return; }
+    if (elLearnModal.classList.contains("is-open"))    { closeLearn();    return; }
+    if (elCartDrawer.classList.contains("is-open"))    { closeCart();     return; }
+  });
+
   /* ─── EVENT BINDINGS ───────────────────────────────── */
   document.getElementById("prev-variant").addEventListener("click", () => {
     switchToVariant((currentVariant - 1 + VARIANTS.length) % VARIANTS.length);
@@ -815,6 +1970,21 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
     setAccentColors(VARIANTS[0]);
     resizeCanvas();
     refreshVoidColor();
+
+    // Wire up persisted cart + product-content sections immediately so they
+    // are populated before the loader finishes (no flash of empty content).
+    loadCart();
+    renderCart();
+    updateBadge();
+    renderReviews();
+    renderRelated();
+    initRevealObserver();
+    updateNavOnScroll();
+    // Re-bind ripple on dynamically rendered .btn elements (related cards aren't .btn but skip anyway)
+    document.querySelectorAll(".btn:not([data-ripple-bound])").forEach((b) => {
+      b.setAttribute("data-ripple-bound", "1");
+      attachRipple(b);
+    });
 
     // Phase 1: load SPARSE_KEYFRAMES keyframes evenly across full range.
     // drawCurrent's nearest-neighbour fallback gives a coarse animation
