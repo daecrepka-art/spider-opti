@@ -315,6 +315,21 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
   const inflight = VARIANTS.map(() => new Map());
   const variantLoadedCount = VARIANTS.map(() => 0);
   const variantFullyLoaded = VARIANTS.map(() => false);
+  // Which variant the background fill should currently be working on.
+  // -1 → idle. Reordered on every variant switch so the user's active
+  // variant always gets bandwidth priority.
+  let activeFillVariant = 0;
+
+  function buildSparseIndices(total, count) {
+    const out = [];
+    if (count >= total) {
+      for (let i = 0; i < total; i++) out.push(i);
+      return out;
+    }
+    const step = (total - 1) / (count - 1);
+    for (let i = 0; i < count; i++) out.push(Math.round(i * step));
+    return out;
+  }
 
   function loadFrame(variantId, idx, priority) {
     const cached = cache[variantId][idx];
@@ -344,14 +359,20 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
     return p;
   }
 
-  async function preloadVariantPooled(variantId, onProgress, concurrency) {
+  async function preloadVariantPooled(variantId, onProgress, concurrency, priority) {
     let nextIdx = 0;
     let completed = 0;
+    const prio = priority || "low";
     async function worker() {
       while (true) {
+        // Yield to give the active variant priority if it changed mid-fill
+        if (activeFillVariant !== -1 && activeFillVariant !== variantId) {
+          await new Promise((r) => setTimeout(r, 80));
+          continue;
+        }
         const myIdx = nextIdx++;
         if (myIdx >= FRAME_COUNT) return;
-        await loadFrame(variantId, myIdx, "high");
+        await loadFrame(variantId, myIdx, prio);
         completed++;
         if (onProgress) onProgress(completed, FRAME_COUNT);
       }
@@ -362,13 +383,14 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
     await Promise.all(workers);
   }
 
-  async function preloadVariantBackground(variantId) {
-    for (let i = 0; i < FRAME_COUNT; i++) {
-      if (cache[variantId][i] || inflight[variantId].has(i)) continue;
-      await loadFrame(variantId, i, "low");
-      // Yield to main thread so scroll stays at 60fps
-      await new Promise((r) => setTimeout(r, 8));
-    }
+  // Load N evenly-spaced "keyframes" of a variant in parallel. After this finishes
+  // the variant has coarse coverage across the entire scroll arc — drawCurrent's
+  // nearest-neighbour fallback can produce a watchable animation even before fill.
+  async function preloadSparseKeyframes(variantId, count, priority) {
+    const indices = buildSparseIndices(FRAME_COUNT, count);
+    await Promise.all(indices.map((idx) =>
+      loadFrame(variantId, idx, priority || "low")
+    ));
   }
 
   /* ─── CANVAS RENDERER (object-fit cover) ───────────── */
@@ -591,8 +613,20 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
     if (variantLoadedCount[newId] >= 1) drawNewFrame();
     else loadFrame(newId, 0, "high").then(drawNewFrame);
 
-    // Kick off background preload of remaining frames if not done (skip on mobile to save bandwidth)
-    if (!isMobile && !variantFullyLoaded[newId]) preloadVariantBackground(newId);
+    // Make this variant the priority of the background fill so any in-flight
+    // pool worker yields to it. Then ensure sparse keyframes exist immediately
+    // so coarse animation works from the first scroll on this variant.
+    if (!isMobile && !variantFullyLoaded[newId]) {
+      activeFillVariant = newId;
+      preloadSparseKeyframes(newId, SPARSE_KEYFRAMES, "high").then(() => {
+        // After sparse keyframes are in, the priority-ordered pool will continue
+        // filling the remaining gaps. Trigger another pass in case the original
+        // fill loop already completed all available work.
+        if (!variantFullyLoaded[newId]) {
+          preloadVariantPooled(newId, null, PRELOAD_CONCURRENCY, "low");
+        }
+      });
+    }
   }
 
   /* ─── THEME TOGGLE ─────────────────────────────────── */
@@ -683,17 +717,6 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
   const elLoaderFill = document.getElementById("loader-bar-fill");
   const elLoaderPct  = document.getElementById("loader-pct");
 
-  function buildSparseIndices(total, count) {
-    const out = [];
-    if (count >= total) {
-      for (let i = 0; i < total; i++) out.push(i);
-      return out;
-    }
-    const step = (total - 1) / (count - 1);
-    for (let i = 0; i < count; i++) out.push(Math.round(i * step));
-    return out;
-  }
-
   async function boot() {
     initTheme();
     setAccentColors(VARIANTS[0]);
@@ -723,14 +746,38 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
       document.body.classList.add("loaded");
     }, 200);
 
-    // Phase 2: fill in the remaining frames of variant 0 in background.
-    // Phase 3 (other variants) starts when Phase 2 finishes — skip on mobile.
-    preloadVariantPooled(0, null, 4).then(async () => {
-      if (isMobile) return;
-      for (let v = 1; v < VARIANTS.length; v++) {
-        if (!variantFullyLoaded[v]) await preloadVariantBackground(v);
-      }
-    });
+    if (isMobile) return;
+
+    // Phase 2: as soon as variant 0 has sparse coverage, kick off SPARSE keyframes
+    // for variants 1-3 in parallel (low priority) so the user can switch to any
+    // variant within a few seconds and immediately see a coarse animation.
+    Promise.all([1, 2, 3].map((v) => preloadSparseKeyframes(v, SPARSE_KEYFRAMES, "low")))
+      .then(() => {
+        // Phase 3: fill remaining frames in priority order, starting with the
+        // currently-active variant. Reordered on every variant switch via
+        // activeFillVariant.
+        fillAllVariantsInPriority();
+      });
+  }
+
+  // Continuously fill every variant that isn't yet complete; the worker pool
+  // honours activeFillVariant to put the user's current variant first.
+  async function fillAllVariantsInPriority() {
+    const order = () => {
+      const ids = [0, 1, 2, 3];
+      ids.sort((a, b) => {
+        if (a === currentVariant) return -1;
+        if (b === currentVariant) return 1;
+        return a - b;
+      });
+      return ids;
+    };
+    for (const vid of order()) {
+      if (variantFullyLoaded[vid]) continue;
+      activeFillVariant = vid;
+      await preloadVariantPooled(vid, null, PRELOAD_CONCURRENCY, "low");
+    }
+    activeFillVariant = -1;
   }
 
   boot().catch((err) => {
