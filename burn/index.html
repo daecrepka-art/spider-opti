@@ -1112,13 +1112,11 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
   }
 
   let _scrollPending = false;
+  let hybridDrivingScroll = false; // true while hybridTick is synchronously flushing — suppresses the scroll-event rAF round-trip
   function _scrollFlush() {
     _scrollPending = false;
     updateNavOnScroll(); // updates is-past-hero/nav-hidden BEFORE we decide to tick the canvas
     if (loopMode) return;
-    // When user is below the hero, the fixed canvas is faded to 0 — skip the
-    // expensive lerp/drawImage entirely. The frame counter UI is still updated
-    // so that scrolling back up jumps to the right frame instantly.
     scrollProgress = computeScrollProgress();
     targetFrame = Math.round(scrollProgress * (FRAME_COUNT - 1));
     updateScrollUI();
@@ -1128,9 +1126,28 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
       currentFrame = targetFrame;
       return;
     }
+    // When the hybrid engine drives the scroll, its physics already produce a
+    // smooth velocity curve — adding the canvas lerp on top introduces a
+    // 1-2-frame visual lag (especially noticeable as the boost decays into the
+    // gentle base speed). Snap the canvas to the exact frame each tick.
+    // For native scroll (chunky wheel past hero, anchor jumps, etc.) we keep
+    // the lerp so the canvas eases between targets.
+    if (hybridDrivingScroll) {
+      displayedFrame = targetFrame;
+      if (currentFrame !== targetFrame) {
+        currentFrame = targetFrame;
+        drawCurrent();
+        updateFrameCounter();
+      }
+      return;
+    }
     scheduleTick();
   }
   function onScrollRaf() {
+    // While the hybrid engine is in the middle of a synchronous flush, the
+    // ensuing scroll event would queue a duplicate (1-frame-later) canvas
+    // update. Skip — the engine already did the work this tick.
+    if (hybridDrivingScroll) return;
     if (_scrollPending) return;
     _scrollPending = true;
     requestAnimationFrame(_scrollFlush);
@@ -1993,12 +2010,13 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
    *   a short pause so they don't fight the engine.
    */
   // prefersReducedMotion + isMobile are already defined at the top of the IIFE
-  const HYBRID_BASE          = 55;     // px/sec gentle auto-advance in hero
-  const HYBRID_WHEEL_GAIN    = 14;     // boost added per pixel of wheel delta (we own the wheel inside hero)
-  const HYBRID_LINE_PX       = 40;     // wheel deltaMode=1 (line) → assume 40px per line
+  const HYBRID_BASE          = 40;     // px/sec gentle auto-advance in hero
+  const HYBRID_WHEEL_GAIN    = 9;      // boost added per pixel of wheel delta (we own the wheel inside hero)
+  const HYBRID_LINE_PX       = 38;     // wheel deltaMode=1 (line) → assume 38px per line
   const HYBRID_PAGE_PX       = 800;    // wheel deltaMode=2 (page) → assume 800px per page
-  const HYBRID_FRICTION      = 2.8;    // higher = faster decay (per second). Lower = longer cinematic glide.
-  const HYBRID_MAX_SPEED     = 5400;   // px/sec cap
+  const HYBRID_FRICTION      = 5.0;    // higher = faster decay (per second). 5 ≈ 95% decay in 0.6 sec.
+  const HYBRID_MAX_SPEED     = 2400;   // px/sec cap
+  const HYBRID_BOOST_FLOOR   = 0.4;    // below this boost is clamped to 0 to avoid sub-pixel jitter
   let hybridBoost  = 0;
   let hybridLastTs = 0;
   let hybridRaf    = 0;
@@ -2014,25 +2032,32 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
                    || document.body.classList.contains("learn-open")
                    || document.body.classList.contains("checkout-open");
     const paused    = ts < hybridPauseUntil || modalOpen;
-    const baseOn    = !loopMode && !pastHero && !prefersReducedMotion && !paused;
-    const base      = baseOn ? HYBRID_BASE : 0;
-    if (modalOpen) hybridBoost = 0; // freeze the page while modals are open
+    if (modalOpen) hybridBoost = 0;
 
+    // Decay first so this frame's `speed` reflects the post-friction velocity.
+    hybridBoost *= Math.exp(-HYBRID_FRICTION * dt);
+    if (Math.abs(hybridBoost) < HYBRID_BOOST_FLOOR) hybridBoost = 0;
+
+    const baseOn = !loopMode && !pastHero && !prefersReducedMotion && !paused;
+    const base   = baseOn ? HYBRID_BASE : 0;
     let speed = base + hybridBoost;
     if (speed >  HYBRID_MAX_SPEED) speed =  HYBRID_MAX_SPEED;
     if (speed < -HYBRID_MAX_SPEED) speed = -HYBRID_MAX_SPEED;
 
-    if (Math.abs(speed) > 0.5) {
+    if (Math.abs(speed) > 0.05) {
       const before = window.scrollY;
       window.scrollBy(0, speed * dt);
-      // If the page didn't actually move (we hit a scroll boundary) drain
-      // the boost so we don't keep "pressing" against the edge.
-      if (Math.abs(window.scrollY - before) < 0.1) hybridBoost = 0;
+      // Hit a scroll boundary — drain boost so we don't keep pressing against the edge
+      if (Math.abs(window.scrollY - before) < 0.05 && hybridBoost !== 0) hybridBoost = 0;
+      // CRITICAL: drive the canvas in the SAME rAF as the scroll change so there's
+      // no 1-2-frame lag between scroll position and rendered frame. Without this,
+      // at low base speed (~0.66 px/frame) the canvas appears to "step" rather
+      // than glide because the scroll-event listener handles the canvas on a
+      // later rAF. Suppressing onScrollRaf during this tick avoids a duplicate.
+      hybridDrivingScroll = true;
+      _scrollFlush();
+      hybridDrivingScroll = false;
     }
-
-    // Exponential friction decay — frame-rate independent
-    hybridBoost *= Math.exp(-HYBRID_FRICTION * dt);
-    if (Math.abs(hybridBoost) < 0.5) hybridBoost = 0;
 
     hybridRaf = requestAnimationFrame(hybridTick);
   }
