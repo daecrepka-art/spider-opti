@@ -2200,11 +2200,16 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
       // any case where the browser or an anchor handler nudged the viewport
       // during the loader phase. Cinematic always begins at frame 1.
       window.scrollTo(0, 0);
-      // Start the hybrid auto-scroll engine. L key still toggles the
-      // frame-loop demo (cycle all 4 flavors). `?loop=1` opts into frame-loop
-      // on boot; `?autoscroll=0` opts out of the gentle base advance.
+      // Cinematic loop runs by default on load — same smooth frame-cycle the
+      // L key produces (every 192 frames, then advances to next flavor, wraps
+      // 04 -> 01). Any meaningful user input (wheel, touch, L, click on a
+      // variant button or the scroll hint) exits the loop and hands control
+      // to the hybrid scroll engine. `?loop=0` opts out at boot.
       const params = new URLSearchParams(window.location.search);
-      if (params.get("loop") === "1" && !isMobile) setLoopMode(true);
+      const loopParam = params.get("loop");
+      if (loopParam !== "0" && !isMobile && !prefersReducedMotion) {
+        setLoopMode(true);
+      }
       startHybridScroll();
       // Dismiss the controls hint after ~15s, or sooner on any meaningful input
       const hint = document.getElementById("hint-toast");
