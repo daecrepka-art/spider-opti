@@ -497,11 +497,65 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
   }
 
   function onScroll() {
+    if (loopMode) return; // loop overrides scroll-driven control
     scrollProgress = computeScrollProgress();
     targetFrame = Math.round(scrollProgress * (FRAME_COUNT - 1));
     updateScrollUI();
     scheduleTick();
   }
+
+  /* ─── AUTOPLAY LOOP MODE (L key / ?loop=1) ───────────── */
+  // Continuously plays every variant's 192 frames end-to-end, then advances to
+  // the next variant. Wraps 04 → 01. Re-press L (or click any variant button)
+  // to drop back into scroll-driven mode.
+  let loopMode = false;
+  let loopFrame = 0;
+  let loopLastTs = 0;
+  let loopRaf = 0;
+  const LOOP_FPS = 30; // frames per second for autoplay
+
+  function loopStep(ts) {
+    if (!loopMode) return;
+    if (!loopLastTs) loopLastTs = ts;
+    const dt = ts - loopLastTs;
+    if (dt >= 1000 / LOOP_FPS) {
+      loopLastTs = ts;
+      loopFrame++;
+      if (loopFrame >= FRAME_COUNT) {
+        loopFrame = 0;
+        const next = (currentVariant + 1) % VARIANTS.length;
+        // Reset to first frame BEFORE the variant swap so the cross-fade lands cleanly
+        targetFrame = 0;
+        displayedFrame = 0;
+        currentFrame = 0;
+        switchToVariant(next, { fromLoop: true });
+      } else {
+        targetFrame = loopFrame;
+        scheduleTick();
+      }
+    }
+    loopRaf = requestAnimationFrame(loopStep);
+  }
+
+  function setLoopMode(on) {
+    if (on === loopMode) return;
+    loopMode = on;
+    if (loopMode) {
+      // Snap to current scroll position so the loop continues from where the user was
+      loopFrame = targetFrame || 0;
+      loopLastTs = 0;
+      document.body.classList.add("is-looping");
+      loopRaf = requestAnimationFrame(loopStep);
+    } else {
+      document.body.classList.remove("is-looping");
+      if (loopRaf) cancelAnimationFrame(loopRaf);
+      loopRaf = 0;
+      // Resync to current scroll on exit
+      onScroll();
+    }
+  }
+
+  function toggleLoop() { setLoopMode(!loopMode); }
 
   /* ─── UI UPDATES ───────────────────────────────────── */
   const elFlavorName     = document.getElementById("flavor-name");
@@ -568,6 +622,11 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
   function switchToVariant(newId, opts) {
     if (switchDebounce) return;
     if (newId === currentVariant && !(opts && opts.force)) return;
+    // A manual variant switch (button click / arrow key) drops out of autoplay.
+    // Loop-driven wraparounds pass {fromLoop:true} so they don't exit themselves.
+    if (loopMode && !(opts && opts.fromLoop)) {
+      setLoopMode(false);
+    }
     switchDebounce = true;
     setTimeout(() => { switchDebounce = false; }, 700);
 
@@ -698,6 +757,9 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
     } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
       e.preventDefault();
       switchToVariant((currentVariant - 1 + VARIANTS.length) % VARIANTS.length);
+    } else if (e.key === "l" || e.key === "L") {
+      e.preventDefault();
+      toggleLoop();
     }
   });
 
@@ -744,6 +806,9 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
     setTimeout(() => {
       elLoader.classList.add("hidden");
       document.body.classList.add("loaded");
+      // Honour ?loop=1 URL flag once the UI is visible
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("loop") === "1") setLoopMode(true);
     }, 200);
 
     if (isMobile) return;
