@@ -645,10 +645,16 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
   function switchToVariant(newId, opts) {
     if (switchDebounce) return;
     if (newId === currentVariant && !(opts && opts.force)) return;
-    // A manual variant switch (button click / arrow key) drops out of autoplay.
-    // Loop-driven wraparounds pass {fromLoop:true} so they don't exit themselves.
-    if (loopMode && !(opts && opts.fromLoop)) {
-      setLoopMode(false);
+    // Manual variant switches (arrow keys, dot clicks, prev/next) stay inside
+    // the autoplay loop — they just retarget which variant is playing.
+    // Loop is only exited by the L key or by an actual scroll/wheel/touch.
+    if (loopMode) {
+      // Restart the new variant from frame 0 for a clean cycle.
+      loopFrame = 0;
+      loopLastTs = 0;
+      targetFrame = 0;
+      displayedFrame = 0;
+      currentFrame = 0;
     }
     switchDebounce = true;
     setTimeout(() => { switchDebounce = false; }, 700);
@@ -774,13 +780,15 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
     dot.addEventListener("click", () => switchToVariant(parseInt(dot.dataset.variant, 10)));
   });
   document.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+    // Use e.code for physical-key matching so non-Latin layouts (e.g. Cyrillic
+    // "д" on the L key, "ц"/"я" on arrows aren't an issue but L was) still work.
+    if (e.code === "ArrowRight" || e.code === "ArrowDown") {
       e.preventDefault();
       switchToVariant((currentVariant + 1) % VARIANTS.length);
-    } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+    } else if (e.code === "ArrowLeft" || e.code === "ArrowUp") {
       e.preventDefault();
       switchToVariant((currentVariant - 1 + VARIANTS.length) % VARIANTS.length);
-    } else if (e.key === "l" || e.key === "L") {
+    } else if (e.code === "KeyL" || e.key === "l" || e.key === "L" || e.key === "\u0434" || e.key === "\u0414") {
       e.preventDefault();
       toggleLoop();
     }
@@ -847,6 +855,14 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
         window.addEventListener("wheel", dismiss, { passive: true });
         window.addEventListener("touchstart", dismiss, { passive: true });
       }
+      // A real scroll gesture (wheel / touchpad / touch) drops out of the
+      // autoplay loop and hands control back to the user. Arrow keys + variant
+      // buttons keep the loop running (see switchToVariant).
+      const exitLoopOnScroll = () => {
+        if (loopMode) setLoopMode(false);
+      };
+      window.addEventListener("wheel", exitLoopOnScroll, { passive: true });
+      window.addEventListener("touchstart", exitLoopOnScroll, { passive: true });
     }, 200);
 
     if (isMobile) return;
