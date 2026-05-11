@@ -137,6 +137,17 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
 .scroll-bar-fill{position:absolute;inset:0;width:0%;background:var(--color-accent);transition:background-color 600ms var(--ease-luxe);will-change:width}
 .scroll-frame-counter{font-size:.55rem;letter-spacing:.4em;color:var(--color-text-secondary);text-transform:uppercase;font-variant-numeric:tabular-nums}
 
+/* ─── HINT TOAST (autoplay + controls onboarding) ───── */
+.hint-toast{position:fixed;left:50%;bottom:140px;transform:translate(-50%,8px);z-index:35;display:flex;align-items:center;gap:10px;padding:14px 22px;background:rgba(10,10,10,0.55);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);border:1px solid var(--color-border);border-radius:999px;font-family:"DM Sans",sans-serif;font-weight:300;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,0.78);white-space:nowrap;opacity:0;pointer-events:none;transition:opacity 600ms var(--ease-luxe),transform 700ms var(--ease-luxe),background-color 500ms var(--ease-luxe),color 500ms var(--ease-luxe),border-color 500ms var(--ease-luxe);box-shadow:0 12px 40px rgba(0,0,0,0.45)}
+.loaded .hint-toast{opacity:1;transform:translate(-50%,0);transition-delay:1400ms}
+.hint-toast.dismissed{opacity:0;transform:translate(-50%,12px);transition-delay:0ms!important}
+.hint-sep{color:rgba(255,255,255,0.22);margin:0 2px}
+.kbd{font-family:"DM Sans",sans-serif;font-weight:500;font-size:.7rem;letter-spacing:.05em;padding:2px 7px;min-width:18px;text-align:center;color:#FFF;background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.18);border-radius:4px;text-transform:none;box-shadow:inset 0 -1px 0 rgba(255,255,255,0.06)}
+[data-theme="light"] .hint-toast{background:rgba(240,237,232,0.72);color:rgba(10,10,10,0.72);border-color:rgba(0,0,0,0.08);box-shadow:0 12px 40px rgba(0,0,0,0.10)}
+[data-theme="light"] .hint-sep{color:rgba(0,0,0,0.22)}
+[data-theme="light"] .kbd{color:#0A0A0A;background:rgba(0,0,0,0.06);border-color:rgba(0,0,0,0.12);box-shadow:inset 0 -1px 0 rgba(0,0,0,0.04)}
+@media (max-width:640px){.hint-toast{bottom:120px;font-size:.6rem;padding:11px 16px;gap:7px}.kbd{font-size:.6rem;padding:1px 5px}}
+
 /* ─── LOADER ─────────────────────────────────────────── */
 #loader{position:fixed;inset:0;z-index:1000;background:var(--color-void);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity 600ms var(--ease-luxe),visibility 0s linear 600ms}
 #loader.hidden{opacity:0;visibility:hidden;pointer-events:none}
@@ -278,6 +289,18 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
     <div class="scroll-bar"><div class="scroll-bar-fill" id="scroll-bar-fill"></div></div>
     <div class="scroll-frame-counter" id="frame-counter">001 / 192</div>
   </div>
+</div>
+
+<!-- HINT TOAST: shown ~15s on boot to teach the autoplay + scroll controls -->
+<div id="hint-toast" class="hint-toast" role="status" aria-live="polite">
+  <span>Press</span>
+  <kbd class="kbd">L</kbd>
+  <span>to pause autoplay</span>
+  <span class="hint-sep">·</span>
+  <span>Scroll</span>
+  <span class="hint-sep">·</span>
+  <kbd class="kbd">←</kbd><kbd class="kbd">→</kbd>
+  <span>switch flavor</span>
 </div>
 
 <!-- CUSTOM CURSOR -->
@@ -806,9 +829,24 @@ body{transition:background-color 500ms var(--ease-luxe),color 500ms var(--ease-l
     setTimeout(() => {
       elLoader.classList.add("hidden");
       document.body.classList.add("loaded");
-      // Honour ?loop=1 URL flag once the UI is visible
+      // Autoplay by default on desktop. '?loop=0' opts out.
       const params = new URLSearchParams(window.location.search);
-      if (params.get("loop") === "1") setLoopMode(true);
+      const wantLoop = params.get("loop") === "0" ? false : !isMobile;
+      if (wantLoop) setLoopMode(true);
+      // Dismiss the controls hint after ~15s, or sooner on any meaningful input
+      const hint = document.getElementById("hint-toast");
+      if (hint) {
+        const dismiss = () => {
+          hint.classList.add("dismissed");
+          window.removeEventListener("keydown", dismiss, true);
+          window.removeEventListener("wheel", dismiss, { passive: true });
+          window.removeEventListener("touchstart", dismiss, { passive: true });
+        };
+        setTimeout(dismiss, 15000);
+        window.addEventListener("keydown", dismiss, true);
+        window.addEventListener("wheel", dismiss, { passive: true });
+        window.addEventListener("touchstart", dismiss, { passive: true });
+      }
     }, 200);
 
     if (isMobile) return;
