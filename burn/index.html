@@ -1029,12 +1029,14 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
     drawCurrent();
   }
 
-  function drawImageCover(img) {
+  function drawImageCover(img, skipFill) {
     if (!img) return;
     const cw = canvas.width;
     const ch = canvas.height;
-    ctx.fillStyle = voidColor;
-    ctx.fillRect(0, 0, cw, ch);
+    if (!skipFill) {
+      ctx.fillStyle = voidColor;
+      ctx.fillRect(0, 0, cw, ch);
+    }
     const iw = img.naturalWidth || img.width;
     const ih = img.naturalHeight || img.height;
     if (!iw || !ih) return;
@@ -1050,23 +1052,46 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
     lastImage = img;
   }
 
+  // Helper: locate the nearest already-loaded frame around `idx` in the current
+  // variant. Used as a fallback while frames stream in.
+  function nearestLoaded(idx) {
+    const lane = cache[currentVariant];
+    if (lane[idx]) return lane[idx];
+    for (let r = 1; r < FRAME_COUNT; r++) {
+      const back = idx - r;
+      const fwd  = idx + r;
+      if (back >= 0 && lane[back]) return lane[back];
+      if (fwd  < FRAME_COUNT && lane[fwd]) return lane[fwd];
+    }
+    return lastImage || null;
+  }
+
+  // Draw the current frame index. If `displayedFrame` lies between two integer
+  // frames, blend them with alpha so the visible deceleration is continuous
+  // even though the source frames are quantized (192 frames over a 9000px
+  // spacer = a discrete step every ~47px of scroll). Without this crossfade
+  // the wheel-decay tail looks like "step by step" at low speed.
   function drawCurrent() {
-    const img = cache[currentVariant][currentFrame];
-    if (img) {
-      drawImageCover(img);
+    const f = displayedFrame;
+    const i0 = Math.floor(f);
+    const i1 = Math.min(FRAME_COUNT - 1, i0 + 1);
+    const t  = f - i0;
+    if (i0 === i1 || t < 0.001) {
+      const img = nearestLoaded(Math.max(0, Math.min(FRAME_COUNT - 1, i0)));
+      if (img) drawImageCover(img);
       return;
     }
-    // Fall back to nearest already-loaded frame in the current variant
-    const lane = cache[currentVariant];
-    let nearest = null;
-    for (let r = 1; r < FRAME_COUNT; r++) {
-      const back = currentFrame - r;
-      const fwd  = currentFrame + r;
-      if (back >= 0 && lane[back]) { nearest = lane[back]; break; }
-      if (fwd  < FRAME_COUNT && lane[fwd]) { nearest = lane[fwd]; break; }
-    }
-    if (nearest) drawImageCover(nearest);
-    else if (lastImage) drawImageCover(lastImage);
+    const a = nearestLoaded(i0);
+    const b = nearestLoaded(i1);
+    if (!a && !b) return;
+    if (!a) { drawImageCover(b); return; }
+    if (!b) { drawImageCover(a); return; }
+    // Base layer: frame i0 fully opaque
+    drawImageCover(a);
+    // Overlay: frame i1 at alpha=t (smooth blend)
+    ctx.globalAlpha = t;
+    drawImageCover(b, /*skipFill=*/ true);
+    ctx.globalAlpha = 1;
   }
 
   /* ─── SCROLL → FRAME (rAF lerp, idle-suspended) ────── */
@@ -1093,10 +1118,13 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
     } else {
       displayedFrame = targetFrame;
     }
+    // Always redraw — displayedFrame is a continuous float and drawCurrent
+    // crossfades between the two adjacent discrete frames, so the visible
+    // motion is smooth even when Math.round(displayedFrame) hasn't changed.
+    drawCurrent();
     const idx = Math.max(0, Math.min(FRAME_COUNT - 1, Math.round(displayedFrame)));
     if (idx !== currentFrame) {
       currentFrame = idx;
-      drawCurrent();
       updateFrameCounter();
     }
   }
@@ -1118,25 +1146,27 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
     updateNavOnScroll(); // updates is-past-hero/nav-hidden BEFORE we decide to tick the canvas
     if (loopMode) return;
     scrollProgress = computeScrollProgress();
-    targetFrame = Math.round(scrollProgress * (FRAME_COUNT - 1));
+    // targetFrame is the continuous float position along the 192-frame timeline.
+    // drawCurrent() does sub-frame crossfade between floor(targetFrame) and
+    // floor+1 so the visible motion is smooth even though frames are quantized.
+    targetFrame = scrollProgress * (FRAME_COUNT - 1);
     updateScrollUI();
     if (document.body.classList.contains("is-past-hero")) {
       // Snap displayed frame to target so re-entry is instant
       displayedFrame = targetFrame;
-      currentFrame = targetFrame;
+      currentFrame = Math.round(targetFrame);
       return;
     }
-    // When the hybrid engine drives the scroll, its physics already produce a
-    // smooth velocity curve — adding the canvas lerp on top introduces a
-    // 1-2-frame visual lag (especially noticeable as the boost decays into the
-    // gentle base speed). Snap the canvas to the exact frame each tick.
-    // For native scroll (chunky wheel past hero, anchor jumps, etc.) we keep
-    // the lerp so the canvas eases between targets.
+    // Hybrid engine produces a smooth velocity at the physics level — snap the
+    // canvas exactly to the scroll position each tick and let the crossfade in
+    // drawCurrent handle the in-between visual. The classic lerp (SMOOTHING)
+    // only kicks in for native chunky scroll (anchor jumps, wheel past hero).
     if (hybridDrivingScroll) {
       displayedFrame = targetFrame;
-      if (currentFrame !== targetFrame) {
-        currentFrame = targetFrame;
-        drawCurrent();
+      drawCurrent();
+      const idx = Math.max(0, Math.min(FRAME_COUNT - 1, Math.round(displayedFrame)));
+      if (idx !== currentFrame) {
+        currentFrame = idx;
         updateFrameCounter();
       }
       return;
@@ -1155,7 +1185,7 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
   function onScroll() {
     if (loopMode) return; // loop overrides scroll-driven control
     scrollProgress = computeScrollProgress();
-    targetFrame = Math.round(scrollProgress * (FRAME_COUNT - 1));
+    targetFrame = scrollProgress * (FRAME_COUNT - 1);
     updateScrollUI();
     scheduleTick();
   }
@@ -2016,7 +2046,10 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
   const HYBRID_PAGE_PX       = 800;    // wheel deltaMode=2 (page) → assume 800px per page
   const HYBRID_FRICTION      = 5.0;    // higher = faster decay (per second). 5 ≈ 95% decay in 0.6 sec.
   const HYBRID_MAX_SPEED     = 2400;   // px/sec cap
-  const HYBRID_BOOST_FLOOR   = 0.4;    // below this boost is clamped to 0 to avoid sub-pixel jitter
+  // No hard "boost-floor" snap — the exponential tail goes to numerical zero
+  // smoothly and the sub-frame crossfade in drawCurrent absorbs any sub-pixel
+  // scroll residue. Snapping boost to 0 produced a tiny discontinuity in the
+  // velocity derivative that was visible as a "settle" feel after release.
   let hybridBoost  = 0;
   let hybridLastTs = 0;
   let hybridRaf    = 0;
@@ -2035,8 +2068,8 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
     if (modalOpen) hybridBoost = 0;
 
     // Decay first so this frame's `speed` reflects the post-friction velocity.
+    // Pure exponential — no floor snap, no kink in dv/dt.
     hybridBoost *= Math.exp(-HYBRID_FRICTION * dt);
-    if (Math.abs(hybridBoost) < HYBRID_BOOST_FLOOR) hybridBoost = 0;
 
     const baseOn = !loopMode && !pastHero && !prefersReducedMotion && !paused;
     const base   = baseOn ? HYBRID_BASE : 0;
@@ -2121,6 +2154,11 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
   const elLoaderPct  = document.getElementById("loader-pct");
 
   async function boot() {
+    // Always start the cinematic from the top — no scroll restoration on
+    // refresh / back-nav / Ctrl+Shift+R. The hero animation only makes sense
+    // when the user begins at frame 1 and the auto-advance runs from there.
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    window.scrollTo(0, 0);
     initTheme();
     setAccentColors(VARIANTS[0]);
     resizeCanvas();
@@ -2158,6 +2196,10 @@ body.is-past-hero #stage{transition:opacity 600ms var(--ease-luxe)}
     setTimeout(() => {
       elLoader.classList.add("hidden");
       document.body.classList.add("loaded");
+      // Re-pin the scroll to the top right before the engine starts — covers
+      // any case where the browser or an anchor handler nudged the viewport
+      // during the loader phase. Cinematic always begins at frame 1.
+      window.scrollTo(0, 0);
       // Start the hybrid auto-scroll engine. L key still toggles the
       // frame-loop demo (cycle all 4 flavors). `?loop=1` opts into frame-loop
       // on boot; `?autoscroll=0` opts out of the gentle base advance.
